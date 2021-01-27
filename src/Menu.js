@@ -63,7 +63,7 @@ class Menu extends React.Component {
                         </IconButton>
                     </div>
                     <div className='button-container'>
-                        <IconButton size="medium" style={{fontSize: 14}} aria-label="download">
+                        <IconButton size="medium" onClick={()=>{this.downloadFile()}} style={{fontSize: 14}} aria-label="download">
                             <GetAppIcon size="large" />
                             <span className='button-text'>EXPORT FILE</span>
                         </IconButton>
@@ -116,6 +116,10 @@ class Menu extends React.Component {
 
     loadText = (t) => {
         this.props.loadText(t);
+    }
+
+    downloadFile = () => {
+        this.props.downloadFile()
     }
 }
 

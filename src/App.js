@@ -42,61 +42,11 @@ class App extends React.Component {
                     removeSelectedConnection = {() => this.removeSelectedConnection()}
                     addConnectionBetweenSelectedAtoms = {() => this.addConnectionBetweenSelectedAtoms()}
                     loadText = {(t) => this.loadText(t)}
+                    downloadFile = {() => this.downloadFile()}
                 />
             </div>
         );
     }
-    /*
-    componentDidMount = () => {
-        fetch('./samples/conf0')
-        .then((r) => r.text())
-        .then(text  => {
-            let lines = text.split('\n')
-
-            let width = parseFloat(lines[0]);
-            let height = parseFloat(lines[1]);
-
-            let atoms = [];
-            let connections = [];
-
-            for (let i = 4; i < lines.length; i++) {
-                let line = lines[i].split(/\s+/);
-                
-                // An atom has 4 properties: id x y z
-                if (line.length === 4) {
-                    atoms.push({
-                        'id': parseInt(line[0]),
-                        'x':  parseFloat(line[1]),
-                        'y':  parseFloat(line[2]),
-                        'z':  parseFloat(line[3])
-                    })
-
-                    this.totalAtoms++;
-                }
-
-                // A connection from a to b has 3 properties: id a b
-                else if (line.length === 3) {
-                    connections.push({
-                        'id': parseInt(line[0]),
-                        'a':  parseInt(line[1]),
-                        'b':  parseInt(line[2])
-                    })
-
-                    this.totalConnections++;
-                }
-            }
-            
-            this.setState({
-                atoms: atoms,
-                connections: connections,
-                width: width,
-                height: height,
-            }, () => {
-                this.canvas.createCanvas();
-            });
-        }) 
-    }
-    */
 
     loadText = (text) => {
         let lines = text.split('\n')
@@ -142,6 +92,37 @@ class App extends React.Component {
         }, () => {
             this.canvas.createCanvas();
         });
+    }
+
+    downloadFile = () => {
+
+        let text = '';
+
+        text += this.state.width + '\n';
+        text += this.state.height + '\n';
+
+        text += '\n\n';
+        
+        for (let i = 0; i < this.state.atoms.length; i++) {
+            let a = this.state.atoms[i];
+            text += a.id + ' ' + a.x + ' ' + a.y + ' ' + a.z + '\n';
+        }
+
+        for (let i = 0; i < this.state.connections.length; i++) {
+            let c = this.state.connections[i];
+            text += c.id + ' ' + c.a + ' ' + c.b + '\n';
+        }
+
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', 'graphene-sample');
+      
+        element.style.display = 'none';
+        document.body.appendChild(element);
+      
+        element.click();
+      
+        document.body.removeChild(element);
     }
 
     addAtomToSelection = (id) => {
