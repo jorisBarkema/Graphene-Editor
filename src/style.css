@@ -58,3 +58,7 @@ body {
 .Mui-disabled {
     color: rgba(0, 0, 0, 0.5) !important;
 }
+
+#file-upload-container {
+    display: none;
+}

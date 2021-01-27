@@ -14,7 +14,6 @@ class GrapheneCanvas extends React.Component {
         this.state = {
             dragging: false,
             selection: {},
-            //minScale: 1,
             offsetx: 0,
             offsety: 0,
             squares: {rows: [0], columns: [0]},
@@ -43,104 +42,34 @@ class GrapheneCanvas extends React.Component {
         window.addEventListener('mouseup', this.stopDragging);
         window.addEventListener('mousemove', this.dragMove);
         
-        //this.createCanvas();
-        /*
-        fetch('./samples/conf0')
-        .then((r) => r.text())
-        .then(text  => {
-            //console.log(text);
-
-            let lines = text.split('\n')
-
-            let width = parseFloat(lines[0]);
-            let height = parseFloat(lines[1]);
-            
-            let bottomRight = this.getStagePositionFromScreen(window.innerWidth, window.innerHeight);
-            let right = bottomRight.x;
-            let bottom = bottomRight.y;
-            let scaleX = (2 * window.innerWidth / 3) / width;
-            let scaleY = (2 * window.innerHeight / 3) / height;
-            
-
-            let atoms = [];
-            let connections = [];
-
-            for (let i = 4; i < lines.length; i++) {
-                let line = lines[i].split(/\s+/);
-                
-                // An atom has 4 properties: id x y z
-                if (line.length === 4) {
-                    atoms.push({
-                        'id': parseInt(line[0]),
-                        'x':  parseFloat(line[1]),
-                        'y':  parseFloat(line[2]),
-                        'z':  parseFloat(line[3])
-                    })
-                }
-
-                // A connection from a to b has 3 properties: id a b
-                else if (line.length === 3) {
-                    connections.push({
-                        'id': parseInt(line[0]),
-                        'a':  parseInt(line[1]),
-                        'b':  parseInt(line[2])
-                    })
-                }
-            }
-            
-            this.defaultScale = Math.min(scaleX, scaleY);
-
-            this.setState({
-                atoms: atoms,
-                connections: connections,
-                width: width,
-                height: height,
-                //minScale: Math.min(scaleX, scaleY),
-                offsetx: width / 2,
-                offsety: height / 2,
-                centeringX: (right - width) / 2,
-                centeringY: (bottom - height) / 2,
-                currentScale: Math.min(scaleX, scaleY),
-                minScale: Math.min(scaleX, scaleY),
-            }, () => {
-                this.setState({
-                    squares: this.currentSquares()
-                })
-            });
-        })
-        */
-
+        this.createCanvas();
     }
 
     createCanvas = () => {
-        console.log("creating canvas");
-        console.log(this.props.atoms);
-        console.log(this.props.connections);
-        console.log(this.props.width);
-        console.log(this.props.height);
-
-        let width = this.props.width;
-        let height = this.props.height;
-
-        let bottomRight = this.getStagePositionFromScreen(window.innerWidth, window.innerHeight);
-        let right = bottomRight.x;
-        let bottom = bottomRight.y;
-        let scaleX = (2 * window.innerWidth / 3) / width;
-        let scaleY = (2 * window.innerHeight / 3) / height;
+        let scaleX = (2 * window.innerWidth / 3) / this.props.width;
+        let scaleY = (2 * window.innerHeight / 3) / this.props.height;
 
         this.defaultScale = Math.min(scaleX, scaleY);
 
         this.setState({
-            offsetx: width / 2,
-            offsety: height / 2,
-            centeringX: (right - width) / 2,
-            centeringY: (bottom - height) / 2,
+            offsetx: this.props.width / 2,
+            offsety: this.props.height / 2,
             currentScale: Math.min(scaleX, scaleY),
             minScale: Math.min(scaleX, scaleY),
+            centeringX: 0,
+            centeringY: 0
         }, () => {
+            let screenBottomRight = this.getScreenPositionFromStage(this.props.width / 2, this.props.height / 2);
+            console.log(screenBottomRight);
+            
             this.setState({
-                squares: this.currentSquares()
-            })
+                centeringX: ((window.innerWidth - screenBottomRight.x) / this.state.currentScale) / 2,
+                centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
+            }, () => {
+                this.setState({
+                    squares: this.currentSquares()
+                });
+            });
         });
     }
 
@@ -356,10 +285,10 @@ class GrapheneCanvas extends React.Component {
     }
 
     handleClick = (e) => {
-        //let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
+        let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
 
-        //console.log("screen position: " + e.pageX + ", " + e.pageY);
-        //console.log("stage position: " + p.x + ", " + p.y);
+        console.log("screen position: " + e.pageX + ", " + e.pageY);
+        console.log("stage position: " + p.x + ", " + p.y);
     }
 
     getStagePositionFromScreen = (x, y) => {
@@ -378,8 +307,8 @@ class GrapheneCanvas extends React.Component {
         let s = this.state.currentScale;
         let pos = this.getCurrentPosition();
         
-        let mx = (x + this.state.offsetx) * s;
-        let my = (y + this.state.offsety) * s;
+        let mx = (x + this.state.offsetx + this.state.centeringX) * s;
+        let my = (y + this.state.offsety + this.state.centeringY) * s;
 
         return {x: mx + pos.x, y: my + pos.y};
     }

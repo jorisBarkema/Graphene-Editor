@@ -25,5 +25,5 @@ For example:
 1	-2	-1	0
 0	0       1
 ```
-gives two atoms ar (-1, -2, 0) and (-2, -1, 0) connected to each other.
+gives two atoms at (-1, -2, 0) and (-2, -1, 0) which are connected to each other.
 The values for a connection or atom must be separated by whitespace.

@@ -11,12 +11,15 @@ import GetAppIcon from '@material-ui/icons/GetApp';
 import PublishIcon from '@material-ui/icons/Publish';
 //import SettingsBackupRestoreIcon from '@material-ui/icons/SettingsBackupRestore';
 
+import FileInput from './FileInput.js';
+
 class Menu extends React.Component {
     
     constructor(props) {
         super(props);
 
         this.state = {};
+        this.fileInput = React.createRef();
     }
 
     render = () => {
@@ -52,15 +55,17 @@ class Menu extends React.Component {
                         </IconButton>
                     </div>
                     <div className='button-container'>
-                        <IconButton size="medium" style={{fontSize: 14}} aria-label="upload">
+                        <IconButton size="medium" onClick={()=>{this.fileInput.startUpload()}}
+                            style={{fontSize: 14}} aria-label="upload">
                             <PublishIcon size="large" />
-                            <span className='button-text'>UPLOAD FILE</span>
+                            <span className='button-text'>IMPORT FILE</span>
+                            <FileInput ref={(ref) => this.fileInput = ref} loadText = {(t) => this.loadText(t)} />
                         </IconButton>
                     </div>
                     <div className='button-container'>
                         <IconButton size="medium" style={{fontSize: 14}} aria-label="download">
                             <GetAppIcon size="large" />
-                            <span className='button-text'>DOWNLOAD FILE</span>
+                            <span className='button-text'>EXPORT FILE</span>
                         </IconButton>
                     </div>
                 </div>
@@ -107,6 +112,10 @@ class Menu extends React.Component {
 
     addConnectionBetweenSelectedAtoms = () => {
         this.props.addConnectionBetweenSelectedAtoms()
+    }
+
+    loadText = (t) => {
+        this.props.loadText(t);
     }
 }
 

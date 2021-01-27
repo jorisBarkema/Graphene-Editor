@@ -15,8 +15,8 @@ class App extends React.Component {
             selection: {},
             atoms: [],
             connections: [],
-            width: 10,
-            height: 10
+            width: 5,//11.868215,
+            height: 5//9.332725
         };
 
         this.canvas = React.createRef();
@@ -41,13 +41,13 @@ class App extends React.Component {
                     connections = {this.state.connections}
                     removeSelectedConnection = {() => this.removeSelectedConnection()}
                     addConnectionBetweenSelectedAtoms = {() => this.addConnectionBetweenSelectedAtoms()}
+                    loadText = {(t) => this.loadText(t)}
                 />
             </div>
         );
     }
-
+    /*
     componentDidMount = () => {
-
         fetch('./samples/conf0')
         .then((r) => r.text())
         .then(text  => {
@@ -95,6 +95,53 @@ class App extends React.Component {
                 this.canvas.createCanvas();
             });
         }) 
+    }
+    */
+
+    loadText = (text) => {
+        let lines = text.split('\n')
+
+        let width = parseFloat(lines[0]);
+        let height = parseFloat(lines[1]);
+
+        let atoms = [];
+        let connections = [];
+
+        for (let i = 4; i < lines.length; i++) {
+            let line = lines[i].split(/\s+/);
+            
+            // An atom has 4 properties: id x y z
+            if (line.length === 4) {
+                atoms.push({
+                    'id': parseInt(line[0]),
+                    'x':  parseFloat(line[1]),
+                    'y':  parseFloat(line[2]),
+                    'z':  parseFloat(line[3])
+                })
+
+                this.totalAtoms++;
+            }
+
+            // A connection from a to b has 3 properties: id a b
+            else if (line.length === 3) {
+                connections.push({
+                    'id': parseInt(line[0]),
+                    'a':  parseInt(line[1]),
+                    'b':  parseInt(line[2])
+                })
+
+                this.totalConnections++;
+            }
+        }
+        
+        this.setState({
+            atoms: atoms,
+            connections: connections,
+            width: width,
+            height: height,
+        }, () => {
+            this.canvas.createCanvas();
+        });
     }
 
     addAtomToSelection = (id) => {
