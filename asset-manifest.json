@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/graphene-editor/static/css/main.307aad88.chunk.css",
-    "main.js": "/graphene-editor/static/js/main.ebb4ff19.chunk.js",
-    "main.js.map": "/graphene-editor/static/js/main.ebb4ff19.chunk.js.map",
-    "runtime-main.js": "/graphene-editor/static/js/runtime-main.0cb89b65.js",
-    "runtime-main.js.map": "/graphene-editor/static/js/runtime-main.0cb89b65.js.map",
-    "static/js/2.700da6ed.chunk.js": "/graphene-editor/static/js/2.700da6ed.chunk.js",
-    "static/js/2.700da6ed.chunk.js.map": "/graphene-editor/static/js/2.700da6ed.chunk.js.map",
-    "static/js/3.2dee031c.chunk.js": "/graphene-editor/static/js/3.2dee031c.chunk.js",
-    "static/js/3.2dee031c.chunk.js.map": "/graphene-editor/static/js/3.2dee031c.chunk.js.map",
-    "index.html": "/graphene-editor/index.html",
-    "static/css/main.307aad88.chunk.css.map": "/graphene-editor/static/css/main.307aad88.chunk.css.map",
-    "static/js/2.700da6ed.chunk.js.LICENSE.txt": "/graphene-editor/static/js/2.700da6ed.chunk.js.LICENSE.txt"
+    "main.css": "/Graphene-Editor/static/css/main.307aad88.chunk.css",
+    "main.js": "/Graphene-Editor/static/js/main.ebb4ff19.chunk.js",
+    "main.js.map": "/Graphene-Editor/static/js/main.ebb4ff19.chunk.js.map",
+    "runtime-main.js": "/Graphene-Editor/static/js/runtime-main.d43000b7.js",
+    "runtime-main.js.map": "/Graphene-Editor/static/js/runtime-main.d43000b7.js.map",
+    "static/js/2.700da6ed.chunk.js": "/Graphene-Editor/static/js/2.700da6ed.chunk.js",
+    "static/js/2.700da6ed.chunk.js.map": "/Graphene-Editor/static/js/2.700da6ed.chunk.js.map",
+    "static/js/3.2dee031c.chunk.js": "/Graphene-Editor/static/js/3.2dee031c.chunk.js",
+    "static/js/3.2dee031c.chunk.js.map": "/Graphene-Editor/static/js/3.2dee031c.chunk.js.map",
+    "index.html": "/Graphene-Editor/index.html",
+    "static/css/main.307aad88.chunk.css.map": "/Graphene-Editor/static/css/main.307aad88.chunk.css.map",
+    "static/js/2.700da6ed.chunk.js.LICENSE.txt": "/Graphene-Editor/static/js/2.700da6ed.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.0cb89b65.js",
+    "static/js/runtime-main.d43000b7.js",
     "static/js/2.700da6ed.chunk.js",
     "static/css/main.307aad88.chunk.css",
     "static/js/main.ebb4ff19.chunk.js"
