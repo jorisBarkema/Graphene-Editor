@@ -43,13 +43,17 @@ class Menu extends React.Component {
                         </IconButton>
                     </div>
                     <div className='button-container'>
-                        <IconButton size="medium" style={{fontSize: 14}} aria-label="replace-by-one">
+                        <IconButton disabled = {!this.canReplaceByAtom()} size="medium" 
+                                    style={{fontSize: 14}} aria-label="replace-by-one"
+                                    onClick = {() => this.replaceSelectionByAtom()}>
                             <AdjustIcon size="large" />
                             <span className='button-text'>REPLACE TRIO BY ATOM</span>
                         </IconButton>
                     </div>
                     <div className='button-container'>
-                        <IconButton size="medium" style={{fontSize: 14}} aria-label="replace-by-three">
+                        <IconButton disabled = {!this.canReplaceByTrio()} 
+                                    size="medium" style={{fontSize: 14}} aria-label="replace-by-three"
+                                    onClick = {() => this.replaceSelectionByTrio()}>
                             <GroupWorkIcon size="large" />
                             <span className='button-text'>REPLACE ATOM BY TRIO</span>
                         </IconButton>
@@ -74,11 +78,17 @@ class Menu extends React.Component {
     }
 
     canReplaceByTrio = () => {
-
+        return (
+            this.props.selection.type === 'atom' &&
+            this.props.selection.ids.length === 1
+        )
     }
 
     canReplaceByAtom = () => {
-
+        return (
+            this.props.selection.type === 'atom' &&
+            this.props.selection.ids.length === 3
+        )
     }
 
     connectionIndexByAtoms = (x, y) => {
@@ -112,6 +122,14 @@ class Menu extends React.Component {
 
     addConnectionBetweenSelectedAtoms = () => {
         this.props.addConnectionBetweenSelectedAtoms()
+    }
+
+    replaceSelectionByAtom = () => {
+        this.props.replaceSelectionByAtom();
+    }
+
+    replaceSelectionByTrio = () => {
+        this.props.replaceSelectionByTrio();
     }
 
     loadText = (t) => {

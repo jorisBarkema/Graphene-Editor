@@ -13,20 +13,14 @@ class FileInput extends React.Component {
         console.log(file);
         
         if (file) {
-            //console.log(file);
-
-            //console.log(file.text());
             file.text().then((t) => {
                 console.log(t);
                 this.props.loadText(t);
+                
+                let input = document.getElementsByName("fileInput")[0];
+
+                input.value = '';
             })
-            //let data = new FormData();
-            //data.append('file', file);
-            //console.log(data);
-            //console.log(data.getAll());
-            //console.log(data.get());
-            //console.log(data.values());
-            // axios.post('/files', data)...
         }
     }
     
@@ -37,7 +31,7 @@ class FileInput extends React.Component {
     render() {
         return <span id="file-upload-container">
             <input type="file"
-            name="myFile"
+            name="fileInput"
             ref={(ref) => this.uploader = ref}
             onChange={this.uploadFile} />
         </span>

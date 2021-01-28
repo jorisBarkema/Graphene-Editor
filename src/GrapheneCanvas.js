@@ -74,13 +74,12 @@ class GrapheneCanvas extends React.Component {
     }
 
     startDragging = (e) => {
+
         this.setState({
             dragStart: this.getStagePositionFromScreen(e.pageX, e.pageY)
         }, () => {
             this.setState({dragging: true});
         })
-
-        //console.log("dragging set to true")
     }
 
     dragMove = (e) => {
@@ -285,10 +284,10 @@ class GrapheneCanvas extends React.Component {
     }
 
     handleClick = (e) => {
-        let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
+        //let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
 
-        console.log("screen position: " + e.pageX + ", " + e.pageY);
-        console.log("stage position: " + p.x + ", " + p.y);
+        //console.log("screen position: " + e.pageX + ", " + e.pageY);
+        //console.log("stage position: " + p.x + ", " + p.y);
     }
 
     getStagePositionFromScreen = (x, y) => {
@@ -315,10 +314,32 @@ class GrapheneCanvas extends React.Component {
 
     //distanceToPoint = (a, b) => Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 
+    connectionIndexByID = (id) => {
+
+        for (let i = 0; i < this.props.connections.length; i++) {
+            if (this.props.connections[i].id === id) {
+                return i
+            }
+        }
+
+        return null
+    }
+
+    atomIndexByID = (id) => {
+
+        for (let i = 0; i < this.props.atoms.length; i++) {
+            if (this.props.atoms[i].id === id) {
+                return i
+            }
+        }
+
+        return null
+    }
+
     getConnectionData = (c) => {
 
-        let a = this.props.atoms[c.a];
-        let b = this.props.atoms[c.b];
+        let a = this.props.atoms[this.atomIndexByID(c.a)];
+        let b = this.props.atoms[this.atomIndexByID(c.b)];
 
         /*
         * We want the line to the closest option for b
