@@ -8,6 +8,8 @@ html {
 body {
     margin: 0px; 
     padding: 0px;
+
+    font-family: Verdana, sans-serif;
 }
 
 #canvas-container {
@@ -52,6 +54,21 @@ body {
 .button-text {
     padding-left: 5px;
     font-size: 14;
+}
+
+#documentation-container {
+    margin: 20px;
+    padding: 0px;
+    padding-top: 15px;
+    
+    
+    width: calc(100% - 40px);
+
+    border-top: 2px solid rgb(150, 150, 150);
+}
+
+p {
+    font-size: 11pt;
 }
 
 .MuiIconButton-root {

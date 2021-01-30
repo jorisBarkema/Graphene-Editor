@@ -9,7 +9,9 @@ import GroupWorkIcon from '@material-ui/icons/GroupWork';
 import AdjustIcon from '@material-ui/icons/Adjust';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import PublishIcon from '@material-ui/icons/Publish';
-//import SettingsBackupRestoreIcon from '@material-ui/icons/SettingsBackupRestore';
+//import ControlCameraIcon from '@material-ui/icons/ControlCamera';
+//import FilterCenterFocusIcon from '@material-ui/icons/FilterCenterFocus'; Voor als ik implementeer dat je kan focussen op een specifiek atoom
+
 
 import FileInput from './FileInput.js';
 
@@ -51,7 +53,7 @@ class Menu extends React.Component {
                         </IconButton>
                     </div>
                     <div className='button-container'>
-                        <IconButton disabled = {!this.canReplaceByTrio()} 
+                        <IconButton disabled = {!this.singleAtomSelected()} 
                                     size="medium" style={{fontSize: 14}} aria-label="replace-by-three"
                                     onClick = {() => this.replaceSelectionByTrio()}>
                             <GroupWorkIcon size="large" />
@@ -72,12 +74,20 @@ class Menu extends React.Component {
                             <span className='button-text'>EXPORT FILE</span>
                         </IconButton>
                     </div>
+                    <div id="documentation-container">
+                        <p>
+                            Add any number of atoms or a single connection to the selection by clicking on them.
+                        </p>
+                        <p>
+                            Drag the canvas to move around, hold Q and drag to move selected atoms.
+                        </p>
+                    </div>
                 </div>
             </div>
         )
     }
 
-    canReplaceByTrio = () => {
+    singleAtomSelected = () => {
         return (
             this.props.selection.type === 'atom' &&
             this.props.selection.ids.length === 1
@@ -118,6 +128,10 @@ class Menu extends React.Component {
     removeSelectedConnection = () => {
         //console.log("removing connection called at menu");
         this.props.removeSelectedConnection();
+    }
+
+    enterMoveAtomState = () => {
+        this.props.enterMoveAtomState();
     }
 
     addConnectionBetweenSelectedAtoms = () => {

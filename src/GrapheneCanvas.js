@@ -25,88 +25,11 @@ class GrapheneCanvas extends React.Component {
             minScale: 50,
             dragStart: {x: 0, y: 0},
             dragged: {x: 0, y: 0},
-            createCanvas: () => this.createCanvas()
+            createCanvas: () => this.createCanvas(),
+            moveMode: false
         }
 
         this.stage = React.createRef();
-    }
-
-    componentDidMount = () => {
-
-        window.addEventListener('click', this.handleClick);
-        window.addEventListener('resize', this.onResize);
-        window.addEventListener('wheel', this.zoomStage);
-
-        
-        window.addEventListener('mousedown', this.startDragging);
-        window.addEventListener('mouseup', this.stopDragging);
-        window.addEventListener('mousemove', this.dragMove);
-        
-        this.createCanvas();
-    }
-
-    createCanvas = () => {
-        let scaleX = (2 * window.innerWidth / 3) / this.props.width;
-        let scaleY = (2 * window.innerHeight / 3) / this.props.height;
-
-        this.defaultScale = Math.min(scaleX, scaleY);
-
-        this.setState({
-            offsetx: this.props.width / 2,
-            offsety: this.props.height / 2,
-            currentScale: Math.min(scaleX, scaleY),
-            minScale: Math.min(scaleX, scaleY),
-            centeringX: 0,
-            centeringY: 0
-        }, () => {
-            let screenBottomRight = this.getScreenPositionFromStage(this.props.width / 2, this.props.height / 2);
-            console.log(screenBottomRight);
-            
-            this.setState({
-                centeringX: ((window.innerWidth - screenBottomRight.x) / this.state.currentScale) / 2,
-                centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
-            }, () => {
-                this.setState({
-                    squares: this.currentSquares()
-                });
-            });
-        });
-    }
-
-    startDragging = (e) => {
-
-        this.setState({
-            dragStart: this.getStagePositionFromScreen(e.pageX, e.pageY)
-        }, () => {
-            this.setState({dragging: true});
-        })
-    }
-
-    dragMove = (e) => {
-        if (!this.state.dragging) return;
-
-        let s = this.state.dragStart;
-        let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
-
-        this.setState({
-            dragged: {
-                x: this.state.dragged.x + p.x - s.x,
-                y: this.state.dragged.y + p.y - s.y
-            },
-            dragStart: p
-        })
-
-        //console.log(this.state.dragged);
-    }
-
-    stopDragging = (e) => {
-        this.setState({
-            dragging: false
-        }, () => {
-            //console.log(this.state.dragging);
-        })
-
-        //console.log("dragging set to false")
     }
 
     render = () => {
@@ -212,6 +135,95 @@ class GrapheneCanvas extends React.Component {
         )
     }
 
+    componentDidMount = () => {
+
+        window.addEventListener('click', this.handleClick);
+        window.addEventListener('resize', this.onResize);
+        window.addEventListener('wheel', this.zoomStage);
+
+        
+        window.addEventListener('mousedown', this.startDragging);
+        window.addEventListener('mouseup', this.stopDragging);
+        window.addEventListener('mousemove', this.dragMove);
+
+        window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keyup', this.handleKeyUp);
+        
+        this.createCanvas();
+    }
+
+    createCanvas = () => {
+        let scaleX = (2 * window.innerWidth / 3) / this.props.width;
+        let scaleY = (2 * window.innerHeight / 3) / this.props.height;
+
+        this.defaultScale = Math.min(scaleX, scaleY);
+
+        this.setState({
+            offsetx: this.props.width / 2,
+            offsety: this.props.height / 2,
+            currentScale: Math.min(scaleX, scaleY),
+            minScale: Math.min(scaleX, scaleY),
+            centeringX: 0,
+            centeringY: 0
+        }, () => {
+            let screenBottomRight = this.getScreenPositionFromStage(this.props.width / 2, this.props.height / 2);
+            console.log(screenBottomRight);
+            
+            this.setState({
+                centeringX: ((window.innerWidth - screenBottomRight.x + 250) / this.state.currentScale) / 2, // +250 beacuse menu is 250px wide
+                centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
+            }, () => {
+                this.setState({
+                    squares: this.currentSquares()
+                });
+            });
+        });
+    }
+
+    startDragging = (e) => {
+
+        this.setState({
+            dragStart: this.getStagePositionFromScreen(e.pageX, e.pageY)
+        }, () => {
+            this.setState({dragging: true});
+        })
+    }
+
+    dragMove = (e) => {
+        if (!this.state.dragging) return;
+
+        let s = this.state.dragStart;
+        let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
+
+        if (this.state.moveMode) {
+            this.setState({
+                dragStart: p
+            });
+            
+            this.props.moveSelectedAtoms(p.x - s.x, p.y - s.y);
+        } else {
+            this.setState({
+                dragged: {
+                    x: this.state.dragged.x + p.x - s.x,
+                    y: this.state.dragged.y + p.y - s.y
+                },
+                dragStart: p
+            })
+        }
+        
+        //console.log(this.state.dragged);
+    }
+
+    stopDragging = (e) => {
+        this.setState({
+            dragging: false
+        }, () => {
+            //console.log(this.state.dragging);
+        })
+
+        //console.log("dragging set to false")
+    }
+
     zoomStage = (e) => {
         if (this.state.mouseOverMenu || this.state.mouseOverTimeline) return;
         if (this.stage === null) return;
@@ -288,6 +300,26 @@ class GrapheneCanvas extends React.Component {
 
         //console.log("screen position: " + e.pageX + ", " + e.pageY);
         //console.log("stage position: " + p.x + ", " + p.y);
+    }
+
+    handleKeyDown = (e) => {
+        if (e.code === 'KeyQ') {
+            console.log("q pressed")
+            if (!this.state.moveMode) {
+                this.setState({
+                    moveMode: true
+                })
+            }
+        }
+    }
+
+    handleKeyUp = (e) => {
+        if (e.code === 'KeyQ') {
+            console.log("q no longer pressed")
+            this.setState({
+                moveMode: false
+            })
+        }
     }
 
     getStagePositionFromScreen = (x, y) => {
@@ -420,6 +452,7 @@ class GrapheneCanvas extends React.Component {
 
     onResize = () => {
         
+        this.createCanvas();
         /*
         let bottomRight = this.getStagePositionFromScreen(window.innerWidth, window.innerHeight);
         let right = bottomRight.x;
