@@ -40,6 +40,7 @@ class App extends React.Component {
                     selection = {this.state.selection}
                     atoms = {this.state.atoms}
                     connections = {this.state.connections}
+                    centerOnSelection = {() => this.centerOnSelection()}
                     removeSelectedConnection = {() => this.removeSelectedConnection()}
                     addConnectionBetweenSelectedAtoms = {() => this.addConnectionBetweenSelectedAtoms()}
                     replaceSelectionByAtom = {() => this.replaceSelectionByAtom()}
@@ -185,10 +186,20 @@ class App extends React.Component {
             a.x += dx;
             a.y += dy;
         }
+    }
 
-        this.setState({
-            atoms: atoms
-        })
+    centerOnSelection = () => {
+        let s = this.state.selection;
+        let id = 0;
+
+        if (s.type === 'atom') id = s.ids[0];
+        if (s.type === 'connection') id = s.id;
+
+        this.centerOnItem(s.type, id);
+    }
+
+    centerOnItem = (type, id) => {
+        this.canvas.centerOnItem(type, id);
     }
 
     removeSelectedConnection = () => {

@@ -10,7 +10,7 @@ import AdjustIcon from '@material-ui/icons/Adjust';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import PublishIcon from '@material-ui/icons/Publish';
 //import ControlCameraIcon from '@material-ui/icons/ControlCamera';
-//import FilterCenterFocusIcon from '@material-ui/icons/FilterCenterFocus'; Voor als ik implementeer dat je kan focussen op een specifiek atoom
+import FilterCenterFocusIcon from '@material-ui/icons/FilterCenterFocus';
 
 
 import FileInput from './FileInput.js';
@@ -28,6 +28,14 @@ class Menu extends React.Component {
         return (
             <div id="menu-container">
                 <div className="vertical-center">
+                    <div className='button-container'>
+                        <IconButton disabled = {false} size="medium" 
+                                    style={{fontSize: 14}} aria-label="add"
+                                    onClick = {() => this.props.centerOnSelection()}>
+                            <FilterCenterFocusIcon size="large" />
+                            <span className='button-text'>CENTER ON SELECTION</span>
+                        </IconButton>
+                    </div>
                     <div className='button-container'>
                         <IconButton disabled = {!this.canAddConnection()} size="medium" 
                                     style={{fontSize: 14}} aria-label="add"

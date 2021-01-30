@@ -199,7 +199,7 @@ class GrapheneCanvas extends React.Component {
             this.setState({
                 dragStart: p
             });
-            
+
             this.props.moveSelectedAtoms(p.x - s.x, p.y - s.y);
         } else {
             this.setState({
@@ -222,6 +222,34 @@ class GrapheneCanvas extends React.Component {
         })
 
         //console.log("dragging set to false")
+    }
+
+    centerOnItem = (type, id) => {
+        if (type === 'atom') {
+            let a = this.props.atoms[this.atomIndexByID(id)];
+
+            this.setState({
+                dragged: {
+                    x: -a.x,
+                    y: -a.y
+                }
+            })
+        }
+
+        // It would be cleaner to do this to focus on the average of a and b,
+        // but that would cause issues with the locations on the edge
+        // because of the modulo in the locations on the canvas
+        if (type === 'connection') {
+            let c = this.props.connections[this.connectionIndexByID(id)];
+            let a = this.props.atoms[this.atomIndexByID(c.a)];
+
+            this.setState({
+                dragged: {
+                    x: -a.x,
+                    y: -a.y
+                }
+            })
+        }
     }
 
     zoomStage = (e) => {
