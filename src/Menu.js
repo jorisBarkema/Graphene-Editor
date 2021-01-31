@@ -14,6 +14,7 @@ import FilterCenterFocusIcon from '@material-ui/icons/FilterCenterFocus';
 
 
 import FileInput from './FileInput.js';
+import Warning from './Warning.js';
 
 class Menu extends React.Component {
     
@@ -27,7 +28,7 @@ class Menu extends React.Component {
     render = () => {
         return (
             <div id="menu-container">
-                <div className="vertical-center">
+                <div>
                     <div className='button-container'>
                         <IconButton disabled = {false} size="medium" 
                                     style={{fontSize: 14}} aria-label="add"
@@ -89,7 +90,20 @@ class Menu extends React.Component {
                         <p>
                             Drag the canvas to move around, hold Q and drag to move selected atoms.
                         </p>
+                        <p>
+                            For more information on how to use this editor, read the README on <a href="https://github.com/jorisBarkema/Graphene-Editor">Github</a>
+                        </p>
                     </div>
+                    {
+                        this.props.warnings.length > 0 ? 
+                        <div id="warning-container">
+                            {
+                                this.props.warnings.map((warning, index) => {
+                                    return <Warning {...warning} key={index} />;
+                                })
+                            }
+                        </div> : null
+                    }
                 </div>
             </div>
         )

@@ -17,7 +17,7 @@ class App extends React.Component {
             connections: [],
             width: 5,
             height: 5,
-            warning: []
+            warnings: []
         };
 
         this.canvas = React.createRef();
@@ -41,6 +41,7 @@ class App extends React.Component {
                     selection = {this.state.selection}
                     atoms = {this.state.atoms}
                     connections = {this.state.connections}
+                    warnings = {this.state.warnings}
                     centerOnSelection = {() => this.centerOnSelection()}
                     removeSelectedConnection = {() => this.removeSelectedConnection()}
                     addConnectionBetweenSelectedAtoms = {() => this.addConnectionBetweenSelectedAtoms()}
@@ -71,16 +72,13 @@ class App extends React.Component {
                     'id': parseInt(line[0]),
                     'x':  parseFloat(line[1]),
                     'y':  parseFloat(line[2]),
-                    'z':  parseFloat(line[3]),
-                    'connections': 0
+                    'z':  parseFloat(line[3])
                 })
 
                 this.totalAtoms++;
             }
 
             // A connection from a to b has 3 properties: id a b
-            // This also initializes the connection counter for the atoms for the consistency checks
-            // So the connections need to be in the file AFTER the atoms
             else if (line.length === 3) {
 
                 let a = parseInt(line[1]);
@@ -91,9 +89,6 @@ class App extends React.Component {
                     'a':  a,
                     'b':  b
                 })
-
-                atoms[this.atomIndexByID(a, atoms)].connections++;
-                atoms[this.atomIndexByID(b, atoms)].connections++;
 
                 this.totalConnections++;
             }
@@ -144,17 +139,56 @@ class App extends React.Component {
     checkConsistency = () => {
         console.log("Checking consistency of sample");
 
-        this.checkAllThreeConnections();
+        let warnings = []
+        warnings = warnings.concat(this.checkAllThreeConnections());
+
+        // Necessity for consistency is checking some things twice,
+        // e.g. when a onnection is removed, but also after replacing atom by trio,
+        // which in turn removes connections.
+        // So convert to set and back to array to remove duplicate warnings.
+        warnings = [...new Set(warnings)];
+
+        this.setState({
+            warnings: warnings
+        })
     }
 
     checkAllThreeConnections = () => {
-        for(let i = 0; i < this.state.atoms.length; i++) {
-            if (this.state.atoms[i].connections < 3) {
-                console.log("Atom " + this.state.atoms[i].id + " has fewer than three connections");
+
+        let warnings = [];
+
+        let cs = this.state.connections;
+        let counts = {};
+
+        for(let i = 0; i < cs.length; i++) {
+            let c = cs[i];
+
+            if (c.a in counts) {
+                counts[c.a]++;
             } else {
-                console.log("Atom " + this.state.atoms[i].id + " has " + this.state.atoms[i].connections + " connections");
+                counts[c.a] = 1;
+            }
+            
+            if (c.b in counts) {
+                counts[c.b]++;
+            } else {
+                counts[c.b] = 1;
             }
         }
+
+        for (const [key, value] of Object.entries(counts)) {
+            if (value < 3) {
+                console.log(`Atom ${key} has only ${value} connections.`);
+
+                warnings.push({
+                    id: key,
+                    type: 'atom',
+                    text: "Too few connections"
+                })
+            }
+        }
+
+        return warnings;
     }
 
     addAtomToSelection = (id) => {
@@ -246,12 +280,6 @@ class App extends React.Component {
         let c = this.state.connections
         let atoms = this.state.atoms;
 
-        let a = this.atomIndexByID(c[i].a);
-        let b = this.atomIndexByID(c[i].b);
-
-        if (a !== null) atoms[a].connections--;
-        if (b !== null) atoms[b].connections--;
-
         c.splice(i, 1);
 
         this.setState({
@@ -291,9 +319,6 @@ class App extends React.Component {
             'b':  b
         })
 
-        atoms[this.atomIndexByID(a)].connections++;
-        atoms[this.atomIndexByID(b)].connections++;
-
         this.setState({
             connections: c,
             atoms: atoms
@@ -311,9 +336,6 @@ class App extends React.Component {
             'a':  a.id,
             'b':  b.id
         })
-
-        atoms[this.atomIndexByID(a.id)].connections++;
-        atoms[this.atomIndexByID(b.id)].connections++;
 
         this.setState({
             connections: c,
@@ -413,8 +435,7 @@ class App extends React.Component {
             'id': new_id,
             'x': x,
             'y': y,
-            'z': z,
-            'connections': 0
+            'z': z
         })
 
         let madeConnectionFrom = [];
@@ -430,9 +451,6 @@ class App extends React.Component {
                         this.removeConnectionByID(c.id);
                     } else {
 
-                        //atoms[this.atomIndexByID(c.a)].connections--;
-                        atoms[this.atomIndexByID(new_id)].connections++;
-
                         c.a = new_id;
                         madeConnectionFrom.push(c.b);
                     }
@@ -441,9 +459,6 @@ class App extends React.Component {
                     if (madeConnectionFrom.includes(c.a)) {
                         this.removeConnectionByID(c.id);
                     } else {
-
-                        //atoms[this.atomIndexByID(c.b)].connections--;
-                        atoms[this.atomIndexByID(new_id)].connections++;
 
                         c.b = new_id;
                         madeConnectionFrom.push(c.a);
@@ -512,24 +527,21 @@ class App extends React.Component {
             'id': id1,
             'x': x + closest_distance / 2,
             'y': y,
-            'z': z,
-            'connections': 0
+            'z': z
         };
 
         let second = {
             'id': id2,
             'x': x - closest_distance / 2,
             'y': y,
-            'z': z,
-            'connections': 0
+            'z': z
         };
 
         let third = {
             'id': id3,
             'x': x,
             'y': y - closest_distance / 2,
-            'z': z,
-            'connections': 0
+            'z': z
         };
 
         atoms.push(first);
@@ -569,18 +581,10 @@ class App extends React.Component {
                 }
 
                 if (c.a === atom_id) {
-
-                    //atoms[this.atomIndexByID(c.a)].connections--;
-                    atoms[this.atomIndexByID(closest.id)].connections++;
-
                     c.a = closest.id;
                 }
     
                 if (c.b === atom_id) {
-
-                    //atoms[this.atomIndexByID(c.b)].connections--;
-                    atoms[this.atomIndexByID(closest.id)].connections++;
-
                     c.b = closest.id;
                 }
             }

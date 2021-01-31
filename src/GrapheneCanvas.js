@@ -136,12 +136,14 @@ class GrapheneCanvas extends React.Component {
 
     componentDidMount = () => {
 
-        window.addEventListener('click', this.handleClick);
+        let container = document.getElementById('canvas-container');
+
+        container.addEventListener('click', this.handleClick);
         window.addEventListener('resize', this.onResize);
-        window.addEventListener('wheel', this.zoomStage);
+        container.addEventListener('wheel', this.zoomStage);
 
         
-        window.addEventListener('mousedown', this.startDragging);
+        container.addEventListener('mousedown', this.startDragging);
         window.addEventListener('mouseup', this.stopDragging);
         window.addEventListener('mousemove', this.dragMove);
 
@@ -168,7 +170,7 @@ class GrapheneCanvas extends React.Component {
             let screenBottomRight = this.getScreenPositionFromStage(this.props.width / 2, this.props.height / 2);
             
             this.setState({
-                centeringX: ((window.innerWidth - screenBottomRight.x + 250) / this.state.currentScale) / 2, // +250 beacuse menu is 250px wide
+                centeringX: ((window.innerWidth - screenBottomRight.x + 280) / this.state.currentScale) / 2, // +280 beacuse menu is 280px wide
                 centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
             }, () => {
                 this.setState({

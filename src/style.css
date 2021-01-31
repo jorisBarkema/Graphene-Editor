@@ -28,22 +28,16 @@ body {
     top: 0px;
     left: 0px;
 
-    width: 250px;
+    width: 280px;
     height: 100vh;
-    padding: 15px;
+    padding: 10px;
 
     z-index: 20;
 
     background-color: rgb(220, 220, 220);
     border-right: 2px solid rgb(150, 150, 150);
-}
 
-.vertical-center {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
+    overflow: auto;
 }
 
 .button-container {
@@ -81,4 +75,20 @@ p {
 
 #file-upload-container {
     display: none;
+}
+
+/* Is so far the same as the documentation container, maybe make a shared class. */
+#warning-container {
+    margin: 20px;
+    padding: 0px;
+    padding-top: 15px;
+    
+    
+    width: calc(100% - 40px);
+
+    border-top: 2px solid rgb(150, 150, 150);
+}
+
+.warning {
+    margin-bottom: 15px;
 }
