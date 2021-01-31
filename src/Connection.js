@@ -43,6 +43,7 @@ class Connection extends React.Component {
     }
 
     handleClick = () => {
+        console.log("Selected connection " + this.props.id);
         this.props.addToSelection(this.props.id);
     }
 }

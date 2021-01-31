@@ -15,8 +15,9 @@ class App extends React.Component {
             selection: {},
             atoms: [],
             connections: [],
-            width: 5,//11.868215,
-            height: 5//9.332725
+            width: 5,
+            height: 5,
+            warning: []
         };
 
         this.canvas = React.createRef();
@@ -70,19 +71,29 @@ class App extends React.Component {
                     'id': parseInt(line[0]),
                     'x':  parseFloat(line[1]),
                     'y':  parseFloat(line[2]),
-                    'z':  parseFloat(line[3])
+                    'z':  parseFloat(line[3]),
+                    'connections': 0
                 })
 
                 this.totalAtoms++;
             }
 
             // A connection from a to b has 3 properties: id a b
+            // This also initializes the connection counter for the atoms for the consistency checks
+            // So the connections need to be in the file AFTER the atoms
             else if (line.length === 3) {
+
+                let a = parseInt(line[1]);
+                let b = parseInt(line[2]);
+
                 connections.push({
                     'id': parseInt(line[0]),
-                    'a':  parseInt(line[1]),
-                    'b':  parseInt(line[2])
+                    'a':  a,
+                    'b':  b
                 })
+
+                atoms[this.atomIndexByID(a, atoms)].connections++;
+                atoms[this.atomIndexByID(b, atoms)].connections++;
 
                 this.totalConnections++;
             }
@@ -94,6 +105,7 @@ class App extends React.Component {
             width: width,
             height: height,
         }, () => {
+            this.checkConsistency();
             this.canvas.createCanvas();
         });
     }
@@ -127,6 +139,22 @@ class App extends React.Component {
         element.click();
       
         document.body.removeChild(element);
+    }
+
+    checkConsistency = () => {
+        console.log("Checking consistency of sample");
+
+        this.checkAllThreeConnections();
+    }
+
+    checkAllThreeConnections = () => {
+        for(let i = 0; i < this.state.atoms.length; i++) {
+            if (this.state.atoms[i].connections < 3) {
+                console.log("Atom " + this.state.atoms[i].id + " has fewer than three connections");
+            } else {
+                console.log("Atom " + this.state.atoms[i].id + " has " + this.state.atoms[i].connections + " connections");
+            }
+        }
     }
 
     addAtomToSelection = (id) => {
@@ -216,11 +244,22 @@ class App extends React.Component {
         let i = this.connectionIndexByID(id);//this.state.connections.indexOf(id);
 
         let c = this.state.connections
+        let atoms = this.state.atoms;
+
+        let a = this.atomIndexByID(c[i].a);
+        let b = this.atomIndexByID(c[i].b);
+
+        if (a !== null) atoms[a].connections--;
+        if (b !== null) atoms[b].connections--;
+
         c.splice(i, 1);
 
         this.setState({
             selection: {},
-            connections: c
+            connections: c,
+            atoms: atoms
+        }, () => {
+            this.checkConsistency();
         })
     }
 
@@ -233,26 +272,39 @@ class App extends React.Component {
         this.setState({
             selection: {},
             atoms: a
+        }, () => {
+            this.checkConsistency();
         })
     }
 
     addConnectionBetweenSelectedAtoms = () => {
 
         let c = this.state.connections;
+        let atoms = this.state.atoms;
+
+        let a = this.state.selection.ids[0];
+        let b = this.state.selection.ids[1];
 
         c.push({
             'id': this.totalConnections++,
-            'a':  this.state.selection.ids[0],
-            'b':  this.state.selection.ids[1]
+            'a':  a,
+            'b':  b
         })
 
+        atoms[this.atomIndexByID(a)].connections++;
+        atoms[this.atomIndexByID(b)].connections++;
+
         this.setState({
-            connections: c
+            connections: c,
+            atoms: atoms
+        }, () => {
+            this.checkConsistency();
         })
     }
 
     addConnectionBetweenAtoms = (a, b) => {
         let c = this.state.connections;
+        let atoms = this.state.atoms;
 
         c.push({
             'id': this.totalConnections++,
@@ -260,8 +312,14 @@ class App extends React.Component {
             'b':  b.id
         })
 
+        atoms[this.atomIndexByID(a.id)].connections++;
+        atoms[this.atomIndexByID(b.id)].connections++;
+
         this.setState({
-            connections: c
+            connections: c,
+            atoms: atoms
+        }, () => {
+            this.checkConsistency();
         })
     }
 
@@ -286,7 +344,7 @@ class App extends React.Component {
 
         return Math.sqrt((b.x - bestX) * (b.x - bestX) + (b.y - bestY) * (b.y - bestY));
         */
-       return this.distanceTo(a, b.x, b.y);
+        return this.distanceTo(a, b.x, b.y);
     }
 
     distanceTo = (a, x, y) => {
@@ -355,7 +413,8 @@ class App extends React.Component {
             'id': new_id,
             'x': x,
             'y': y,
-            'z': z
+            'z': z,
+            'connections': 0
         })
 
         let madeConnectionFrom = [];
@@ -370,6 +429,10 @@ class App extends React.Component {
                     if (madeConnectionFrom.includes(c.b)) {
                         this.removeConnectionByID(c.id);
                     } else {
+
+                        //atoms[this.atomIndexByID(c.a)].connections--;
+                        atoms[this.atomIndexByID(new_id)].connections++;
+
                         c.a = new_id;
                         madeConnectionFrom.push(c.b);
                     }
@@ -378,6 +441,10 @@ class App extends React.Component {
                     if (madeConnectionFrom.includes(c.a)) {
                         this.removeConnectionByID(c.id);
                     } else {
+
+                        //atoms[this.atomIndexByID(c.b)].connections--;
+                        atoms[this.atomIndexByID(new_id)].connections++;
+
                         c.b = new_id;
                         madeConnectionFrom.push(c.a);
                     }
@@ -392,6 +459,8 @@ class App extends React.Component {
             selection: {},
             atoms: atoms,
             connections: connections
+        }, () => {
+            this.checkConsistency();
         })
     }
 
@@ -443,21 +512,24 @@ class App extends React.Component {
             'id': id1,
             'x': x + closest_distance / 2,
             'y': y,
-            'z': z
+            'z': z,
+            'connections': 0
         };
 
         let second = {
             'id': id2,
             'x': x - closest_distance / 2,
             'y': y,
-            'z': z
+            'z': z,
+            'connections': 0
         };
 
         let third = {
             'id': id3,
             'x': x,
             'y': y - closest_distance / 2,
-            'z': z
+            'z': z,
+            'connections': 0
         };
 
         atoms.push(first);
@@ -497,10 +569,18 @@ class App extends React.Component {
                 }
 
                 if (c.a === atom_id) {
+
+                    //atoms[this.atomIndexByID(c.a)].connections--;
+                    atoms[this.atomIndexByID(closest.id)].connections++;
+
                     c.a = closest.id;
                 }
     
                 if (c.b === atom_id) {
+
+                    //atoms[this.atomIndexByID(c.b)].connections--;
+                    atoms[this.atomIndexByID(closest.id)].connections++;
+
                     c.b = closest.id;
                 }
             }
@@ -510,6 +590,8 @@ class App extends React.Component {
             selection: {},
             atoms: atoms,
             connections: connections
+        }, () => {
+            this.checkConsistency();
         })
     }
 
@@ -524,10 +606,14 @@ class App extends React.Component {
         return null
     }
 
-    atomIndexByID = (id) => {
+    atomIndexByID = (id, atoms = null) => {
 
-        for (let i = 0; i < this.state.atoms.length; i++) {
-            if (this.state.atoms[i].id === id) {
+        if (atoms === null) {
+            atoms = this.state.atoms;
+        }
+
+        for (let i = 0; i < atoms.length; i++) {
+            if (atoms[i].id === id) {
                 return i
             }
         }

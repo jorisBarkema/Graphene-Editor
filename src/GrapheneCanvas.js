@@ -166,7 +166,6 @@ class GrapheneCanvas extends React.Component {
             centeringY: 0
         }, () => {
             let screenBottomRight = this.getScreenPositionFromStage(this.props.width / 2, this.props.height / 2);
-            console.log(screenBottomRight);
             
             this.setState({
                 centeringX: ((window.innerWidth - screenBottomRight.x + 250) / this.state.currentScale) / 2, // +250 beacuse menu is 250px wide
@@ -318,7 +317,6 @@ class GrapheneCanvas extends React.Component {
             columns.push(i);
         }
 
-        console.log({rows: rows, columns: columns});
         return {rows: rows, columns: columns}
     }
 

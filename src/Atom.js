@@ -49,6 +49,7 @@ class Atom extends React.Component {
     }
 
     handleClick = () => {
+        console.log("Selected atom " + this.props.id);
         this.props.addToSelection(this.props.id);
     }
 }
