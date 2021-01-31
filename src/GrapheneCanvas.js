@@ -25,7 +25,6 @@ class GrapheneCanvas extends React.Component {
             minScale: 50,
             dragStart: {x: 0, y: 0},
             dragged: {x: 0, y: 0},
-            createCanvas: () => this.createCanvas(),
             moveMode: false
         }
 
@@ -153,8 +152,8 @@ class GrapheneCanvas extends React.Component {
     }
 
     createCanvas = () => {
-        let scaleX = (2 * window.innerWidth / 3) / this.props.width;
-        let scaleY = (2 * window.innerHeight / 3) / this.props.height;
+        let scaleX = (7 * window.innerWidth / 8) / this.props.width;
+        let scaleY = (7 * window.innerHeight / 8) / this.props.height;
 
         this.defaultScale = Math.min(scaleX, scaleY);
 
