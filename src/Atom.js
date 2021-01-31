@@ -34,7 +34,7 @@ class Atom extends React.Component {
             fill = {this.getColor()}
             onMouseEnter = {() => this.setState({hovered: true})}
             onMouseLeave = {() => this.setState({hovered: false})}
-            onClick = {() => this.handleClick()}
+            onMouseDown = {() => this.handleClick()}
         />])
     }
 

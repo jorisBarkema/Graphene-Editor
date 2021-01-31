@@ -20,7 +20,7 @@ class Connection extends React.Component {
             strokeWidth = {12 / this.props.scale}
             onMouseEnter = {() => this.setState({hovered: true})}
             onMouseLeave = {() => this.setState({hovered: false})}
-            onClick = {() => this.handleClick()}
+            onMouseDown = {() => this.handleClick()}
         />,
         <Line
             points = {this.props.points}
@@ -28,7 +28,7 @@ class Connection extends React.Component {
             strokeWidth = {(this.state.hovered ? 5 : 4) / this.props.scale}
             onMouseEnter = {() => this.setState({hovered: true})}
             onMouseLeave = {() => this.setState({hovered: false})}
-            onClick = {() => this.handleClick()}
+            onMouseDown = {() => this.handleClick()}
         />])
     }
     
