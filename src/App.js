@@ -34,11 +34,13 @@ class App extends React.Component {
                     height = {this.state.height}
                     addAtomToSelection = {(id) => this.addAtomToSelection(id)}
                     addConnectionToSelection = {(id) => this.addConnectionToSelection(id)}
+                    moveSelectedAtoms = {(dx, dy) => this.moveSelectedAtoms(dx, dy)}
                 />
                 <Menu 
                     selection = {this.state.selection}
                     atoms = {this.state.atoms}
                     connections = {this.state.connections}
+                    centerOnSelection = {() => this.centerOnSelection()}
                     removeSelectedConnection = {() => this.removeSelectedConnection()}
                     addConnectionBetweenSelectedAtoms = {() => this.addConnectionBetweenSelectedAtoms()}
                     replaceSelectionByAtom = {() => this.replaceSelectionByAtom()}
@@ -169,6 +171,35 @@ class App extends React.Component {
                 }
             })
         }
+    }
+
+    moveSelectedAtoms = (dx, dy) => {
+        let s = this.state.selection;
+
+        if (s.type === 'connection') return;
+
+        let atoms = this.state.atoms;
+
+        for (let i = 0; i < s.ids.length; i++) {
+            let a = atoms[this.atomIndexByID(s.ids[i])];
+
+            a.x += dx;
+            a.y += dy;
+        }
+    }
+
+    centerOnSelection = () => {
+        let s = this.state.selection;
+        let id = 0;
+
+        if (s.type === 'atom') id = s.ids[0];
+        if (s.type === 'connection') id = s.id;
+
+        this.centerOnItem(s.type, id);
+    }
+
+    centerOnItem = (type, id) => {
+        this.canvas.centerOnItem(type, id);
     }
 
     removeSelectedConnection = () => {
