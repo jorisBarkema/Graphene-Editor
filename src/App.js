@@ -142,6 +142,7 @@ class App extends React.Component {
 
         let warnings = []
         warnings = warnings.concat(this.checkAllThreeConnections());
+        //warnings = warnings.concat(this.checkNoIntersections()); // Does not work yet, don't know how to do this properly
 
         // Necessity for consistency is checking some things twice,
         // e.g. when a onnection is removed, but also after replacing atom by trio,
@@ -179,7 +180,7 @@ class App extends React.Component {
 
         for (const [key, value] of Object.entries(counts)) {
             if (value < 3) {
-                console.log(`Atom ${key} has only ${value} connections.`);
+                //console.log(`Atom ${key} has only ${value} connections.`);
 
                 warnings.push({
                     id: key,
@@ -192,6 +193,101 @@ class App extends React.Component {
         return warnings;
     }
 
+    checkNoIntersections = () => {
+        let cs = this.state.connections;
+        let atoms = this.state.atoms;
+
+        let warnings = [];
+
+        for(let i = 0; i < cs.length; i++) {
+            for (let j = i + 1; j < cs.length; j++) {
+
+                let from = cs[i];
+                let to = cs[j];
+
+                let a = atoms[this.atomIndexByID(from.a)];
+                let b = atoms[this.atomIndexByID(from.b)];
+
+                let u = atoms[this.atomIndexByID(to.a)];
+                let v = atoms[this.atomIndexByID(to.b)];
+
+                let intersection = this.lines_intersect(a.x, a.y, b.x, b.y, u.x, u.y, v.x, v.y);
+
+                if (intersection) {
+
+                    if (!(this.distanceTo(a, intersection.x, intersection.y) < 1 ||
+                          this.distanceTo(b, intersection.x, intersection.y) < 1 ||
+                          this.distanceTo(u, intersection.x, intersection.y) < 1 ||
+                          this.distanceTo(v, intersection.x, intersection.y) < 1)) {
+                        
+                            console.log(intersection.x, intersection.y);
+                            console.log('---');
+                            console.log(a.x, a.y);
+                            console.log(b.x, b.y);
+                            console.log(u.x, u.y);
+                            console.log(v.x, v.y);
+
+                            warnings.push({
+                            id: from.id,
+                            type: 'connection',
+                            text: `Crossing lines between connections ${from.id} and ${to.id}`
+                        })
+                    }
+                }
+            }
+        }
+
+        return warnings;
+    }
+
+    // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
+    // Determine the intersection point of two line segments
+    // Return FALSE if the lines don't intersect
+    lines_intersect = (x1, y1, x2, y2, x3, y3, x4, y4) => {
+
+        // Check if none of the lines are of length 0
+        if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+            return false
+        }
+    
+        let denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1))
+    
+        // Lines are parallel
+        if (denominator === 0) {
+            return false
+        }
+    
+        let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator
+        let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator
+    
+        // is the intersection along the segments
+        if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+            return false
+        }
+    
+        // Return a object with the x and y coordinates of the intersection
+        let x = x1 + ua * (x2 - x1)
+        let y = y1 + ua * (y2 - y1)
+    
+        return {x, y}
+    }
+    /*
+    lines_intersect = (p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y) => {
+
+        var s1_x, s1_y, s2_x, s2_y;
+        s1_x = p1_x - p0_x;
+        s1_y = p1_y - p0_y;
+        s2_x = p3_x - p2_x;
+        s2_y = p3_y - p2_y;
+    
+        var s, t;
+        s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+        t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+    
+        //return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
+        return (s >= 0.3 && s <= 0.7 && t >= 0.3 && t <= 0.7);
+    }
+    */
     addAtomToSelection = (id) => {
         let s = this.state.selection;
 
@@ -249,6 +345,8 @@ class App extends React.Component {
             a.x += dx;
             a.y += dy;
         }
+
+        //TODO: bij mouse up / stoppen met bewegen ook consistencycheck doen voor de crossing lines
     }
 
     centerOnSelection = () => {
