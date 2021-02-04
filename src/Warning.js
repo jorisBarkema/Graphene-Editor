@@ -23,7 +23,7 @@ class Warning extends React.Component {
         return (
             <div className="warning">
                 <Alert severity="warning" action={
-                    <Button color="inherit" size="small">
+                    <Button color="inherit" size="small" onClick={() => this.props.centerOnItem(this.props.type, this.props.id)}>
                     VIEW
                     </Button>
                 }>
@@ -31,6 +31,10 @@ class Warning extends React.Component {
                 </Alert>
             </div>
         )
+    }
+
+    onClick = () => {
+        console.log("test");
     }
 }
 

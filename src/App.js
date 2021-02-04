@@ -43,6 +43,7 @@ class App extends React.Component {
                     connections = {this.state.connections}
                     warnings = {this.state.warnings}
                     centerOnSelection = {() => this.centerOnSelection()}
+                    centerOnItem = {(t, id) => this.centerOnItem(t, id)}
                     removeSelectedConnection = {() => this.removeSelectedConnection()}
                     addConnectionBetweenSelectedAtoms = {() => this.addConnectionBetweenSelectedAtoms()}
                     replaceSelectionByAtom = {() => this.replaceSelectionByAtom()}
@@ -261,7 +262,8 @@ class App extends React.Component {
     }
 
     centerOnItem = (type, id) => {
-        this.canvas.centerOnItem(type, id);
+        
+        this.canvas.centerOnItem(type, parseInt(id));
     }
 
     removeSelectedConnection = () => {

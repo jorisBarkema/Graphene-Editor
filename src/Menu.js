@@ -83,6 +83,16 @@ class Menu extends React.Component {
                             <span className='button-text'>EXPORT FILE</span>
                         </IconButton>
                     </div>
+                    {
+                        this.props.warnings.length > 0 ? 
+                        <div id="warning-container">
+                            {
+                                this.props.warnings.map((warning, index) => {
+                                    return <Warning {...warning} key={index} centerOnItem={(t, id) => this.props.centerOnItem(t, id)} />;
+                                })
+                            }
+                        </div> : null
+                    }
                     <div id="documentation-container">
                         <p>
                             Add any number of atoms or a single connection to the selection by clicking on them.
@@ -94,16 +104,6 @@ class Menu extends React.Component {
                             For more information on how to use this editor, read the README on <a href="https://github.com/jorisBarkema/Graphene-Editor">Github</a>
                         </p>
                     </div>
-                    {
-                        this.props.warnings.length > 0 ? 
-                        <div id="warning-container">
-                            {
-                                this.props.warnings.map((warning, index) => {
-                                    return <Warning {...warning} key={index} />;
-                                })
-                            }
-                        </div> : null
-                    }
                 </div>
             </div>
         )
