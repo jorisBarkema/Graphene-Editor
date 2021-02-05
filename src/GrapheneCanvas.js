@@ -10,6 +10,7 @@ class GrapheneCanvas extends React.Component {
         super(props);
 
         this.defaultScale = 50;
+        this.menuWidth = 280;
 
         this.state = {
             dragging: false,
@@ -136,12 +137,14 @@ class GrapheneCanvas extends React.Component {
 
     componentDidMount = () => {
 
-        window.addEventListener('click', this.handleClick);
+        let container = document.getElementById('canvas-container');
+
+        container.addEventListener('click', this.handleClick);
         window.addEventListener('resize', this.onResize);
-        window.addEventListener('wheel', this.zoomStage);
+        container.addEventListener('wheel', this.zoomStage);
 
         
-        window.addEventListener('mousedown', this.startDragging);
+        container.addEventListener('mousedown', this.startDragging);
         window.addEventListener('mouseup', this.stopDragging);
         window.addEventListener('mousemove', this.dragMove);
 
@@ -166,10 +169,9 @@ class GrapheneCanvas extends React.Component {
             centeringY: 0
         }, () => {
             let screenBottomRight = this.getScreenPositionFromStage(this.props.width / 2, this.props.height / 2);
-            console.log(screenBottomRight);
             
             this.setState({
-                centeringX: ((window.innerWidth - screenBottomRight.x + 250) / this.state.currentScale) / 2, // +250 beacuse menu is 250px wide
+                centeringX: ((window.innerWidth - screenBottomRight.x + this.menuWidth) / this.state.currentScale) / 2,
                 centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
             }, () => {
                 this.setState({
@@ -214,6 +216,8 @@ class GrapheneCanvas extends React.Component {
     }
 
     stopDragging = (e) => {
+        this.props.checkConsistency();
+
         this.setState({
             dragging: false
         }, () => {
@@ -251,6 +255,15 @@ class GrapheneCanvas extends React.Component {
         }
     }
 
+    centerOnLocation = (x, y) => {
+        this.setState({
+            dragged: {
+                x: -x,
+                y: -y
+            }
+        })
+    }
+
     zoomStage = (e) => {
         if (this.state.mouseOverMenu || this.state.mouseOverTimeline) return;
         if (this.stage === null) return;
@@ -264,7 +277,8 @@ class GrapheneCanvas extends React.Component {
         let newscale = this.getCurrentScale() * factor;
 
         //this.zoomStageTo(e.pageX, e.pageY, newscale);
-        this.zoomStageTo(window.innerWidth / 2, window.innerHeight / 2, newscale);
+        //this.zoomStageTo(window.innerWidth / 2, window.innerHeight / 2, newscale);
+        this.zoomStageTo((window.innerWidth - this.menuWidth) / 2 + this.menuWidth, window.innerHeight / 2, newscale);
     }
 
     zoomStageTo = (x, y, newscale) => {
@@ -318,15 +332,14 @@ class GrapheneCanvas extends React.Component {
             columns.push(i);
         }
 
-        console.log({rows: rows, columns: columns});
         return {rows: rows, columns: columns}
     }
 
     handleClick = (e) => {
-        //let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
+        let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
 
         //console.log("screen position: " + e.pageX + ", " + e.pageY);
-        //console.log("stage position: " + p.x + ", " + p.y);
+        console.log("stage position: " + p.x + ", " + p.y);
     }
 
     handleKeyDown = (e) => {

@@ -15,8 +15,9 @@ class App extends React.Component {
             selection: {},
             atoms: [],
             connections: [],
-            width: 5,//11.868215,
-            height: 5//9.332725
+            width: 5,
+            height: 5,
+            warnings: []
         };
 
         this.canvas = React.createRef();
@@ -35,12 +36,16 @@ class App extends React.Component {
                     addAtomToSelection = {(id) => this.addAtomToSelection(id)}
                     addConnectionToSelection = {(id) => this.addConnectionToSelection(id)}
                     moveSelectedAtoms = {(dx, dy) => this.moveSelectedAtoms(dx, dy)}
+                    checkConsistency = {() => this.checkConsistency()}
                 />
                 <Menu 
                     selection = {this.state.selection}
                     atoms = {this.state.atoms}
                     connections = {this.state.connections}
+                    warnings = {this.state.warnings}
                     centerOnSelection = {() => this.centerOnSelection()}
+                    centerOnItem = {(t, id) => this.centerOnItem(t, id)}
+                    centerOnLocation = {(x, y) => this.centerOnLocation(x, y)}
                     removeSelectedConnection = {() => this.removeSelectedConnection()}
                     addConnectionBetweenSelectedAtoms = {() => this.addConnectionBetweenSelectedAtoms()}
                     replaceSelectionByAtom = {() => this.replaceSelectionByAtom()}
@@ -78,10 +83,14 @@ class App extends React.Component {
 
             // A connection from a to b has 3 properties: id a b
             else if (line.length === 3) {
+
+                let a = parseInt(line[1]);
+                let b = parseInt(line[2]);
+
                 connections.push({
                     'id': parseInt(line[0]),
-                    'a':  parseInt(line[1]),
-                    'b':  parseInt(line[2])
+                    'a':  a,
+                    'b':  b
                 })
 
                 this.totalConnections++;
@@ -94,6 +103,7 @@ class App extends React.Component {
             width: width,
             height: height,
         }, () => {
+            this.checkConsistency();
             this.canvas.createCanvas();
         });
     }
@@ -129,6 +139,154 @@ class App extends React.Component {
         document.body.removeChild(element);
     }
 
+    checkConsistency = () => {
+        console.log("Checking consistency of sample");
+
+        let warnings = []
+        warnings = warnings.concat(this.checkAllThreeConnections());
+        warnings = warnings.concat(this.checkNoIntersections());
+
+        // Necessity for consistency is checking some things twice,
+        // e.g. when a onnection is removed, but also after replacing atom by trio,
+        // which in turn removes connections.
+        // So convert to set and back to array to remove duplicate warnings.
+        warnings = [...new Set(warnings)];
+
+        this.setState({
+            warnings: warnings
+        })
+    }
+
+    checkAllThreeConnections = () => {
+
+        let warnings = [];
+
+        let cs = this.state.connections;
+        let counts = {};
+
+        for(let i = 0; i < cs.length; i++) {
+            let c = cs[i];
+
+            if (c.a in counts) {
+                counts[c.a]++;
+            } else {
+                counts[c.a] = 1;
+            }
+            
+            if (c.b in counts) {
+                counts[c.b]++;
+            } else {
+                counts[c.b] = 1;
+            }
+        }
+
+        for (const [key, value] of Object.entries(counts)) {
+            if (value < 3) {
+                warnings.push({
+                    id: key,
+                    type: 'atom',
+                    text: "Too few connections"
+                })
+            }
+
+            if (value > 3) {
+                warnings.push({
+                    id: key,
+                    type: 'atom',
+                    text: "Too many connections"
+                })
+            }
+        }
+
+        return warnings;
+    }
+
+    checkNoIntersections = () => {
+        let cs = this.state.connections;
+        let atoms = this.state.atoms;
+
+        let warnings = [];
+
+        for(let i = 0; i < cs.length; i++) {
+            for (let j = i + 1; j < cs.length; j++) {
+
+                let first = cs[i];
+                let second = cs[j];
+
+                if (first.a === second.a || first.a === second.b || first.b === second.a | first.b === second.b) {
+                    continue;
+                }
+
+                let a = atoms[this.atomIndexByID(first.a)];
+                let b = atoms[this.atomIndexByID(first.b)];
+                
+                let bx = this.closestToNumber(a.x, [b.x, b.x - this.state.width, b.x + this.state.width]);
+                let by = this.closestToNumber(a.y, [b.y, b.y - this.state.height, b.y + this.state.height]);
+
+                let u = atoms[this.atomIndexByID(second.a)];
+                let v = atoms[this.atomIndexByID(second.b)];
+
+                let vx = this.closestToNumber(u.x, [v.x, v.x - this.state.width, v.x + this.state.width]);
+                let vy = this.closestToNumber(u.y, [v.y, v.y - this.state.height, v.y + this.state.height]);
+
+                let intersection = this.lines_intersect(a.x, a.y, bx, by, u.x, u.y, vx, vy);
+
+                if (intersection) {
+
+                    console.log("location");
+                    console.log(intersection.x, intersection.y);
+                    console.log('---');
+                    console.log(first);
+                    console.log(second);
+                    console.log('---');
+                    console.log(a.x, a.y);
+                    console.log(b.x, b.y);
+                    console.log(u.x, u.y);
+                    console.log(v.x, v.y);
+
+                    warnings.push({
+                        location: intersection,
+                        text: `Crossing lines between connections ${first.id} and ${second.id}`
+                    })
+                }
+            }
+        }
+
+        return warnings;
+    }
+
+    // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
+    // Determine the intersection point of two line segments
+    // Return FALSE if the lines don't intersect
+    lines_intersect = (x1, y1, x2, y2, x3, y3, x4, y4) => {
+
+        // Check if none of the lines are of length 0
+        if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+            return false
+        }
+    
+        let denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1))
+    
+        // Lines are parallel
+        if (denominator === 0) {
+            return false
+        }
+    
+        let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator
+        let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator
+    
+        // is the intersection along the segments
+        if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+            return false
+        }
+    
+        // Return a object with the x and y coordinates of the intersection
+        let x = x1 + ua * (x2 - x1)
+        let y = y1 + ua * (y2 - y1)
+    
+        return {x, y}
+    }
+    
     addAtomToSelection = (id) => {
         let s = this.state.selection;
 
@@ -186,6 +344,8 @@ class App extends React.Component {
             a.x += dx;
             a.y += dy;
         }
+
+        //TODO: bij mouse up / stoppen met bewegen ook consistencycheck doen voor de crossing lines
     }
 
     centerOnSelection = () => {
@@ -199,7 +359,12 @@ class App extends React.Component {
     }
 
     centerOnItem = (type, id) => {
-        this.canvas.centerOnItem(type, id);
+        
+        this.canvas.centerOnItem(type, parseInt(id));
+    }
+
+    centerOnLocation = (x, y) => {
+        this.canvas.centerOnLocation(x, y);
     }
 
     removeSelectedConnection = () => {
@@ -216,11 +381,16 @@ class App extends React.Component {
         let i = this.connectionIndexByID(id);//this.state.connections.indexOf(id);
 
         let c = this.state.connections
+        let atoms = this.state.atoms;
+
         c.splice(i, 1);
 
         this.setState({
             selection: {},
-            connections: c
+            connections: c,
+            atoms: atoms
+        }, () => {
+            this.checkConsistency();
         })
     }
 
@@ -233,26 +403,36 @@ class App extends React.Component {
         this.setState({
             selection: {},
             atoms: a
+        }, () => {
+            this.checkConsistency();
         })
     }
 
     addConnectionBetweenSelectedAtoms = () => {
 
         let c = this.state.connections;
+        let atoms = this.state.atoms;
+
+        let a = this.state.selection.ids[0];
+        let b = this.state.selection.ids[1];
 
         c.push({
             'id': this.totalConnections++,
-            'a':  this.state.selection.ids[0],
-            'b':  this.state.selection.ids[1]
+            'a':  a,
+            'b':  b
         })
 
         this.setState({
-            connections: c
+            connections: c,
+            atoms: atoms
+        }, () => {
+            this.checkConsistency();
         })
     }
 
     addConnectionBetweenAtoms = (a, b) => {
         let c = this.state.connections;
+        let atoms = this.state.atoms;
 
         c.push({
             'id': this.totalConnections++,
@@ -261,7 +441,10 @@ class App extends React.Component {
         })
 
         this.setState({
-            connections: c
+            connections: c,
+            atoms: atoms
+        }, () => {
+            this.checkConsistency();
         })
     }
 
@@ -286,7 +469,7 @@ class App extends React.Component {
 
         return Math.sqrt((b.x - bestX) * (b.x - bestX) + (b.y - bestY) * (b.y - bestY));
         */
-       return this.distanceTo(a, b.x, b.y);
+        return this.distanceTo(a, b.x, b.y);
     }
 
     distanceTo = (a, x, y) => {
@@ -370,6 +553,7 @@ class App extends React.Component {
                     if (madeConnectionFrom.includes(c.b)) {
                         this.removeConnectionByID(c.id);
                     } else {
+
                         c.a = new_id;
                         madeConnectionFrom.push(c.b);
                     }
@@ -378,6 +562,7 @@ class App extends React.Component {
                     if (madeConnectionFrom.includes(c.a)) {
                         this.removeConnectionByID(c.id);
                     } else {
+
                         c.b = new_id;
                         madeConnectionFrom.push(c.a);
                     }
@@ -392,6 +577,8 @@ class App extends React.Component {
             selection: {},
             atoms: atoms,
             connections: connections
+        }, () => {
+            this.checkConsistency();
         })
     }
 
@@ -510,6 +697,8 @@ class App extends React.Component {
             selection: {},
             atoms: atoms,
             connections: connections
+        }, () => {
+            this.checkConsistency();
         })
     }
 
@@ -524,10 +713,14 @@ class App extends React.Component {
         return null
     }
 
-    atomIndexByID = (id) => {
+    atomIndexByID = (id, atoms = null) => {
 
-        for (let i = 0; i < this.state.atoms.length; i++) {
-            if (this.state.atoms[i].id === id) {
+        if (atoms === null) {
+            atoms = this.state.atoms;
+        }
+
+        for (let i = 0; i < atoms.length; i++) {
+            if (atoms[i].id === id) {
                 return i
             }
         }
