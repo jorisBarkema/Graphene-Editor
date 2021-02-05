@@ -36,6 +36,7 @@ class App extends React.Component {
                     addAtomToSelection = {(id) => this.addAtomToSelection(id)}
                     addConnectionToSelection = {(id) => this.addConnectionToSelection(id)}
                     moveSelectedAtoms = {(dx, dy) => this.moveSelectedAtoms(dx, dy)}
+                    checkConsistency = {() => this.checkConsistency()}
                 />
                 <Menu 
                     selection = {this.state.selection}
@@ -44,6 +45,7 @@ class App extends React.Component {
                     warnings = {this.state.warnings}
                     centerOnSelection = {() => this.centerOnSelection()}
                     centerOnItem = {(t, id) => this.centerOnItem(t, id)}
+                    centerOnLocation = {(x, y) => this.centerOnLocation(x, y)}
                     removeSelectedConnection = {() => this.removeSelectedConnection()}
                     addConnectionBetweenSelectedAtoms = {() => this.addConnectionBetweenSelectedAtoms()}
                     replaceSelectionByAtom = {() => this.replaceSelectionByAtom()}
@@ -142,7 +144,7 @@ class App extends React.Component {
 
         let warnings = []
         warnings = warnings.concat(this.checkAllThreeConnections());
-        //warnings = warnings.concat(this.checkNoIntersections()); // Does not work yet, don't know how to do this properly
+        warnings = warnings.concat(this.checkNoIntersections());
 
         // Necessity for consistency is checking some things twice,
         // e.g. when a onnection is removed, but also after replacing atom by trio,
@@ -180,12 +182,18 @@ class App extends React.Component {
 
         for (const [key, value] of Object.entries(counts)) {
             if (value < 3) {
-                //console.log(`Atom ${key} has only ${value} connections.`);
-
                 warnings.push({
                     id: key,
                     type: 'atom',
                     text: "Too few connections"
+                })
+            }
+
+            if (value > 3) {
+                warnings.push({
+                    id: key,
+                    type: 'atom',
+                    text: "Too many connections"
                 })
             }
         }
@@ -202,37 +210,44 @@ class App extends React.Component {
         for(let i = 0; i < cs.length; i++) {
             for (let j = i + 1; j < cs.length; j++) {
 
-                let from = cs[i];
-                let to = cs[j];
+                let first = cs[i];
+                let second = cs[j];
 
-                let a = atoms[this.atomIndexByID(from.a)];
-                let b = atoms[this.atomIndexByID(from.b)];
+                if (first.a === second.a || first.a === second.b || first.b === second.a | first.b === second.b) {
+                    continue;
+                }
 
-                let u = atoms[this.atomIndexByID(to.a)];
-                let v = atoms[this.atomIndexByID(to.b)];
+                let a = atoms[this.atomIndexByID(first.a)];
+                let b = atoms[this.atomIndexByID(first.b)];
+                
+                let bx = this.closestToNumber(a.x, [b.x, b.x - this.state.width, b.x + this.state.width]);
+                let by = this.closestToNumber(a.y, [b.y, b.y - this.state.height, b.y + this.state.height]);
 
-                let intersection = this.lines_intersect(a.x, a.y, b.x, b.y, u.x, u.y, v.x, v.y);
+                let u = atoms[this.atomIndexByID(second.a)];
+                let v = atoms[this.atomIndexByID(second.b)];
+
+                let vx = this.closestToNumber(u.x, [v.x, v.x - this.state.width, v.x + this.state.width]);
+                let vy = this.closestToNumber(u.y, [v.y, v.y - this.state.height, v.y + this.state.height]);
+
+                let intersection = this.lines_intersect(a.x, a.y, bx, by, u.x, u.y, vx, vy);
 
                 if (intersection) {
 
-                    if (!(this.distanceTo(a, intersection.x, intersection.y) < 1 ||
-                          this.distanceTo(b, intersection.x, intersection.y) < 1 ||
-                          this.distanceTo(u, intersection.x, intersection.y) < 1 ||
-                          this.distanceTo(v, intersection.x, intersection.y) < 1)) {
-                        
-                            console.log(intersection.x, intersection.y);
-                            console.log('---');
-                            console.log(a.x, a.y);
-                            console.log(b.x, b.y);
-                            console.log(u.x, u.y);
-                            console.log(v.x, v.y);
+                    console.log("location");
+                    console.log(intersection.x, intersection.y);
+                    console.log('---');
+                    console.log(first);
+                    console.log(second);
+                    console.log('---');
+                    console.log(a.x, a.y);
+                    console.log(b.x, b.y);
+                    console.log(u.x, u.y);
+                    console.log(v.x, v.y);
 
-                            warnings.push({
-                            id: from.id,
-                            type: 'connection',
-                            text: `Crossing lines between connections ${from.id} and ${to.id}`
-                        })
-                    }
+                    warnings.push({
+                        location: intersection,
+                        text: `Crossing lines between connections ${first.id} and ${second.id}`
+                    })
                 }
             }
         }
@@ -271,23 +286,7 @@ class App extends React.Component {
     
         return {x, y}
     }
-    /*
-    lines_intersect = (p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y) => {
-
-        var s1_x, s1_y, s2_x, s2_y;
-        s1_x = p1_x - p0_x;
-        s1_y = p1_y - p0_y;
-        s2_x = p3_x - p2_x;
-        s2_y = p3_y - p2_y;
     
-        var s, t;
-        s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
-        t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
-    
-        //return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
-        return (s >= 0.3 && s <= 0.7 && t >= 0.3 && t <= 0.7);
-    }
-    */
     addAtomToSelection = (id) => {
         let s = this.state.selection;
 
@@ -362,6 +361,10 @@ class App extends React.Component {
     centerOnItem = (type, id) => {
         
         this.canvas.centerOnItem(type, parseInt(id));
+    }
+
+    centerOnLocation = (x, y) => {
+        this.canvas.centerOnLocation(x, y);
     }
 
     removeSelectedConnection = () => {

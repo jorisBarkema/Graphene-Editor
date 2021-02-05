@@ -88,7 +88,7 @@ class Menu extends React.Component {
                         <div id="warning-container">
                             {
                                 this.props.warnings.map((warning, index) => {
-                                    return <Warning {...warning} key={index} centerOnItem={(t, id) => this.props.centerOnItem(t, id)} />;
+                                    return <Warning {...warning} key={index} centerOnLocation={(x, y) => this.props.centerOnLocation(x, y)} centerOnItem={(t, id) => this.props.centerOnItem(t, id)} />;
                                 })
                             }
                         </div> : null

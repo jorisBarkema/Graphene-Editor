@@ -10,6 +10,7 @@ class GrapheneCanvas extends React.Component {
         super(props);
 
         this.defaultScale = 50;
+        this.menuWidth = 280;
 
         this.state = {
             dragging: false,
@@ -170,7 +171,7 @@ class GrapheneCanvas extends React.Component {
             let screenBottomRight = this.getScreenPositionFromStage(this.props.width / 2, this.props.height / 2);
             
             this.setState({
-                centeringX: ((window.innerWidth - screenBottomRight.x + 280) / this.state.currentScale) / 2, // +280 beacuse menu is 280px wide
+                centeringX: ((window.innerWidth - screenBottomRight.x + this.menuWidth) / this.state.currentScale) / 2,
                 centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
             }, () => {
                 this.setState({
@@ -215,6 +216,8 @@ class GrapheneCanvas extends React.Component {
     }
 
     stopDragging = (e) => {
+        this.props.checkConsistency();
+
         this.setState({
             dragging: false
         }, () => {
@@ -252,6 +255,15 @@ class GrapheneCanvas extends React.Component {
         }
     }
 
+    centerOnLocation = (x, y) => {
+        this.setState({
+            dragged: {
+                x: -x,
+                y: -y
+            }
+        })
+    }
+
     zoomStage = (e) => {
         if (this.state.mouseOverMenu || this.state.mouseOverTimeline) return;
         if (this.stage === null) return;
@@ -265,7 +277,8 @@ class GrapheneCanvas extends React.Component {
         let newscale = this.getCurrentScale() * factor;
 
         //this.zoomStageTo(e.pageX, e.pageY, newscale);
-        this.zoomStageTo(window.innerWidth / 2, window.innerHeight / 2, newscale);
+        //this.zoomStageTo(window.innerWidth / 2, window.innerHeight / 2, newscale);
+        this.zoomStageTo((window.innerWidth - this.menuWidth) / 2 + this.menuWidth, window.innerHeight / 2, newscale);
     }
 
     zoomStageTo = (x, y, newscale) => {
@@ -323,10 +336,10 @@ class GrapheneCanvas extends React.Component {
     }
 
     handleClick = (e) => {
-        //let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
+        let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
 
         //console.log("screen position: " + e.pageX + ", " + e.pageY);
-        //console.log("stage position: " + p.x + ", " + p.y);
+        console.log("stage position: " + p.x + ", " + p.y);
     }
 
     handleKeyDown = (e) => {
