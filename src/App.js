@@ -58,6 +58,8 @@ class App extends React.Component {
     }
 
     loadText = (text) => {
+        console.log("loading text");
+
         let lines = text.split('\n')
 
         let width = parseFloat(lines[0]);
@@ -103,7 +105,9 @@ class App extends React.Component {
             width: width,
             height: height,
         }, () => {
+            console.log("loaded text");
             this.checkConsistency();
+            console.log("checked consistency");
             this.canvas.createCanvas();
         });
     }

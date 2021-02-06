@@ -60,7 +60,7 @@ class GrapheneCanvas extends React.Component {
                         {
                             this.props.connections.map((connection) => {
                                 let data = this.getConnectionData(connection);
-
+                                
                                 return data.map((d) => {
                                     return <Connection
                                         key = {d.key}
@@ -92,7 +92,7 @@ class GrapheneCanvas extends React.Component {
                         }
                     </Layer>
 
-                    <Layer>
+                    <Layer listening={false}>
                     <Rect
                             width = {this.state.centeringX}
                             height = {10 * this.props.height}
@@ -162,6 +162,7 @@ class GrapheneCanvas extends React.Component {
                 centeringX: ((window.innerWidth - screenBottomRight.x + this.menuWidth) / this.state.currentScale) / 2,
                 centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
             }, () => {
+                console.log("Created canvas");
                 this.setState({
                     squares: this.currentSquares()
                 });

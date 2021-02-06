@@ -26,6 +26,7 @@ class Atom extends React.Component {
             onMouseEnter = {() => this.setState({hovered: true})}
             onMouseLeave = {() => this.setState({hovered: false})}
             onClick = {() => this.handleClick()}
+            perfectDrawEnabled={false}
         />,
         <Circle
             x = {this.props.x}
@@ -35,6 +36,7 @@ class Atom extends React.Component {
             onMouseEnter = {() => this.setState({hovered: true})}
             onMouseLeave = {() => this.setState({hovered: false})}
             onMouseDown = {() => this.handleClick()}
+            perfectDrawEnabled={false}
         />])
     }
 

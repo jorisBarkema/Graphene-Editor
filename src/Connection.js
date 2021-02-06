@@ -21,6 +21,7 @@ class Connection extends React.Component {
             onMouseEnter = {() => this.setState({hovered: true})}
             onMouseLeave = {() => this.setState({hovered: false})}
             onMouseDown = {() => this.handleClick()}
+            perfectDrawEnabled={false}
         />,
         <Line
             points = {this.props.points}
@@ -29,6 +30,7 @@ class Connection extends React.Component {
             onMouseEnter = {() => this.setState({hovered: true})}
             onMouseLeave = {() => this.setState({hovered: false})}
             onMouseDown = {() => this.handleClick()}
+            perfectDrawEnabled={false}
         />])
     }
     
