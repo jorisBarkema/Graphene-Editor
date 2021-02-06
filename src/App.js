@@ -302,7 +302,7 @@ class App extends React.Component {
             }
 
             this.setState({
-                selection: s
+                selection: s.ids.length > 0 ? s : {}
             })
         } else {
             this.setState({

@@ -30,7 +30,7 @@ class Menu extends React.Component {
             <div id="menu-container">
                 <div>
                     <div className='button-container'>
-                        <IconButton disabled = {false} size="medium" 
+                        <IconButton disabled = {this.selectionIsEmpty()} size="medium" 
                                     style={{fontSize: 14}} aria-label="add"
                                     onClick = {() => this.props.centerOnSelection()}>
                             <FilterCenterFocusIcon size="large" />
@@ -107,6 +107,10 @@ class Menu extends React.Component {
                 </div>
             </div>
         )
+    }
+
+    selectionIsEmpty = () => {
+        return !(this.props.selection.type === 'atom' || this.props.selection.type === 'connection');
     }
 
     singleAtomSelected = () => {
