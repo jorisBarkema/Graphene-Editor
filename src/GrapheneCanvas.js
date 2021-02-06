@@ -9,7 +9,7 @@ class GrapheneCanvas extends React.Component {
     constructor(props) {
         super(props);
 
-        this.defaultScale = 50;
+        this.defaultScale = 0;
         this.menuWidth = 280;
 
         this.state = {
@@ -22,8 +22,8 @@ class GrapheneCanvas extends React.Component {
             centeringY: 0,
             totalWidth: window.innerWidth,
             totalHeight: window.innerHeight,
-            currentScale: 50,
-            minScale: 50,
+            currentScale: this.defaultScale,
+            minScale: this.defaultScale,
             dragStart: {x: 0, y: 0},
             dragged: {x: 0, y: 0},
             moveMode: false
@@ -65,7 +65,7 @@ class GrapheneCanvas extends React.Component {
                                     return <Connection
                                         key = {d.key}
                                         id= {d.id}
-                                        scale = {this.state.currentScale}
+                                        scale = {this.getCurrentScale()}
                                         points = {d.points}
                                         selected = {this.props.selection.type === 'connection' && this.props.selection.id === d.id}
                                         addToSelection = {(c) => this.addConnectionToSelection(c)}
@@ -82,7 +82,7 @@ class GrapheneCanvas extends React.Component {
                                 return (<Atom 
                                     key = {a.id}
                                     id = {a.id}
-                                    scale = {this.state.currentScale}
+                                    scale = {this.getCurrentScale()}
                                     x = {coords.x}
                                     y = {coords.y}
                                     selected = {this.props.selection.type === 'atom' && this.props.selection.ids.includes(a.id)}
@@ -158,13 +158,17 @@ class GrapheneCanvas extends React.Component {
         let scaleX = (7 * window.innerWidth / 8) / this.props.width;
         let scaleY = (7 * window.innerHeight / 8) / this.props.height;
 
-        this.defaultScale = Math.min(scaleX, scaleY);
+        console.log(this.defaultScale);
+
+        this.defaultScale = Math.max(40, Math.min(scaleX, scaleY));
+
+        console.log(this.defaultScale);
 
         this.setState({
             offsetx: this.props.width / 2,
             offsety: this.props.height / 2,
-            currentScale: Math.min(scaleX, scaleY),
-            minScale: Math.min(scaleX, scaleY),
+            currentScale: this.defaultScale,//Math.max(this.defaultScale, Math.min(scaleX, scaleY)),
+            minScale: this.defaultScale,//Math.max(this.defaultScale, Math.min(scaleX, scaleY)),
             centeringX: 0,
             centeringY: 0
         }, () => {
@@ -278,13 +282,17 @@ class GrapheneCanvas extends React.Component {
 
         //this.zoomStageTo(e.pageX, e.pageY, newscale);
         //this.zoomStageTo(window.innerWidth / 2, window.innerHeight / 2, newscale);
+        console.log("newscale: " + newscale);
         this.zoomStageTo((window.innerWidth - this.menuWidth) / 2 + this.menuWidth, window.innerHeight / 2, newscale);
     }
 
     zoomStageTo = (x, y, newscale) => {
         //if (newscale > this.state.maxscale) newscale = this.state.maxscale;
 
-        if (newscale < this.state.minScale) newscale = this.state.minScale;
+        if (newscale < this.state.minScale) {
+            console.log("restricting newscale to " + this.state.minScale);
+            newscale = this.state.minScale;
+        }
 
         if (this.stage === null) return;
 
@@ -364,7 +372,7 @@ class GrapheneCanvas extends React.Component {
 
     getStagePositionFromScreen = (x, y) => {
 
-        let s = this.state.currentScale;
+        let s = this.getCurrentScale();
         let pos = this.getCurrentPosition();
 
         let mx = (x - pos.x) / s;
@@ -375,7 +383,7 @@ class GrapheneCanvas extends React.Component {
     }
 
     getScreenPositionFromStage = (x, y) => {
-        let s = this.state.currentScale;
+        let s = this.getCurrentScale();
         let pos = this.getCurrentPosition();
         
         let mx = (x + this.state.offsetx + this.state.centeringX) * s;
@@ -493,32 +501,16 @@ class GrapheneCanvas extends React.Component {
     onResize = () => {
         
         this.createCanvas();
-        /*
-        let bottomRight = this.getStagePositionFromScreen(window.innerWidth, window.innerHeight);
-        let right = bottomRight.x;
-        let bottom = bottomRight.y;
-        let scaleX = (2 * window.innerWidth / 3) / this.props.width;
-        let scaleY = (2 * window.innerHeight / 3) / this.props.height;
-
-
-        this.setState({
-            totalWidth: window.innerWidth,
-            totalHeight: window.innerHeight,
-            centeringX: (right - this.props.width) / 2,
-            centeringY: (bottom - this.props.height) / 2,
-            currentScale: Math.min(scaleX, scaleY),
-            minScale: Math.min(scaleX, scaleY),
-        })
-        */
     }
 
     getCurrentScale = () => {
-        let s = this.defaultScale;
+        let s = this.state.currentScale;
 
         try {
             s = this.stage.scaleX();
         } catch(error) {
-            console.log(error)
+            console.log("Could not get stage.scaleX()");
+            console.log(error);
         }
 
         return s;
