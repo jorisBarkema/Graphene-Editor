@@ -232,18 +232,6 @@ class App extends React.Component {
                 let intersection = this.lines_intersect(a.x, a.y, bx, by, u.x, u.y, vx, vy);
 
                 if (intersection) {
-
-                    console.log("location");
-                    console.log(intersection.x, intersection.y);
-                    console.log('---');
-                    console.log(first);
-                    console.log(second);
-                    console.log('---');
-                    console.log(a.x, a.y);
-                    console.log(b.x, b.y);
-                    console.log(u.x, u.y);
-                    console.log(v.x, v.y);
-
                     warnings.push({
                         location: intersection,
                         text: `Crossing lines between connections ${first.id} and ${second.id}`
@@ -289,9 +277,6 @@ class App extends React.Component {
     
     addAtomToSelection = (id) => {
         let s = this.state.selection;
-
-        //console.log('adding ' + id + ' to selection which is now:');
-        //console.log(s);
 
         if (s.type === 'atom') {
             if (s.ids.includes(id)) {
@@ -344,8 +329,6 @@ class App extends React.Component {
             a.x += dx;
             a.y += dy;
         }
-
-        //TODO: bij mouse up / stoppen met bewegen ook consistencycheck doen voor de crossing lines
     }
 
     centerOnSelection = () => {
@@ -368,8 +351,6 @@ class App extends React.Component {
     }
 
     removeSelectedConnection = () => {
-        //this.canvas.removeSelectedConnection();
-
         let id = this.state.selection.id;
 
         console.log("removing connection " + id);
@@ -378,7 +359,7 @@ class App extends React.Component {
     }
 
     removeConnectionByID = (id) => {
-        let i = this.connectionIndexByID(id);//this.state.connections.indexOf(id);
+        let i = this.connectionIndexByID(id);
 
         let c = this.state.connections
         let atoms = this.state.atoms;
@@ -395,7 +376,7 @@ class App extends React.Component {
     }
 
     removeAtomByID = (id) => {
-        let i = this.atomIndexByID(id);//this.state.connections.indexOf(id);
+        let i = this.atomIndexByID(id);
 
         let a = this.state.atoms
         a.splice(i, 1);
@@ -463,12 +444,6 @@ class App extends React.Component {
     }
 
     distanceBetween = (a, b) => {
-        /*
-        let bestX = this.closestToNumber(b.x, [a.x, a.x - this.state.width, a.x + this.state.width]);
-        let bestY = this.closestToNumber(b.y, [a.y, a.y - this.state.height, a.y + this.state.height]);
-
-        return Math.sqrt((b.x - bestX) * (b.x - bestX) + (b.y - bestY) * (b.y - bestY));
-        */
         return this.distanceTo(a, b.x, b.y);
     }
 
@@ -611,15 +586,10 @@ class App extends React.Component {
             }
         }
 
-        //console.log("closest distance: " + closest_distance);
-
         let old_atom = atoms[this.atomIndexByID(atom_id)];
 
         this.removeAtomByID(atom_id);
 
-        //console.log(old_atom);
-
-        //let new_id = this.totalAtoms;
         let x = old_atom.x, y = old_atom.y, z = old_atom.z;
         let id1 = this.totalAtoms++;
         let id2 = this.totalAtoms++;
