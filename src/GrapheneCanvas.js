@@ -17,7 +17,6 @@ class GrapheneCanvas extends React.Component {
             selection: {},
             offsetx: 0,
             offsety: 0,
-            squares: {rows: [0], columns: [0]},
             centeringX: 0,
             centeringY: 0,
             totalWidth: window.innerWidth,
@@ -163,9 +162,6 @@ class GrapheneCanvas extends React.Component {
                 centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
             }, () => {
                 console.log("Created canvas");
-                this.setState({
-                    squares: this.currentSquares()
-                });
             });
         });
     }
@@ -204,7 +200,8 @@ class GrapheneCanvas extends React.Component {
 
     stopDragging = (e) => {
         this.props.checkConsistency();
-
+        this.props.updateSquares();
+        
         this.setState({
             dragging: false
         }, () => {
@@ -293,38 +290,11 @@ class GrapheneCanvas extends React.Component {
         });
     }
 
-    currentSquares = () => {
-
-        //let scale = this.stage.scaleX();
-
-        // Do it some distance out of bounds so they load before they are needed
-        let topLeft = this.getStagePositionFromScreen(0, 0);
-        let bottomRight = this.getStagePositionFromScreen(window.innerWidth, window.innerHeight);
-
-        let rowStart = Math.floor(topLeft.x / this.props.height - 1);
-        let rowEnd = Math.ceil(bottomRight.x / this.props.height + 1);
-
-        let columnStart = Math.floor(topLeft.y / this.props.width - 1);
-        let columnEnd = Math.ceil(bottomRight.y / this.props.width + 1);
-
-        let rows = [];
-        for (let i = rowStart; i <= rowEnd; i++) {
-            rows.push(i);
-        }
-
-        let columns = [];
-        for (let i = columnStart; i <= columnEnd; i++) {
-            columns.push(i);
-        }
-
-        return {rows: rows, columns: columns}
-    }
-
     handleClick = (e) => {
-        //let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
+        let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
 
-        //console.log("screen position: " + e.pageX + ", " + e.pageY);
-        //console.log("stage position: " + p.x + ", " + p.y);
+        console.log("screen position: " + e.pageX + ", " + e.pageY);
+        console.log("stage position: " + p.x + ", " + p.y);
     }
 
     handleKeyDown = (e) => {
@@ -497,9 +467,10 @@ class GrapheneCanvas extends React.Component {
         try {
             pos = this.stage.absolutePosition();
         } catch(error) {
-            //console.log(error)
+            console.log(error)
         }
 
+        console.log("stage pos: " + pos.x + ", " + pos.y);
         return pos;
     }
 }

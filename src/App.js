@@ -11,10 +11,16 @@ class App extends React.Component {
     constructor(props) {
         super(props);
 
+        this.squareHeight = 5;
+        this.squareWidth = 5;
+
         this.state = {
             selection: {},
             atoms: [],
             connections: [],
+            squares: {rows: [], columns: []},
+            visibleAtoms: [],
+            visibleConnections: [],
             width: 5,
             height: 5,
             warnings: []
@@ -29,14 +35,15 @@ class App extends React.Component {
                 <GrapheneCanvas
                     ref={ref => (this.canvas = ref)}
                     selection = {this.state.selection}
-                    atoms = {this.state.atoms}
-                    connections = {this.state.connections}
+                    atoms = {this.state.visibleAtoms}
+                    connections = {this.state.visibleConnections}
                     width = {this.state.width}
                     height = {this.state.height}
                     addAtomToSelection = {(id) => this.addAtomToSelection(id)}
                     addConnectionToSelection = {(id) => this.addConnectionToSelection(id)}
                     moveSelectedAtoms = {(dx, dy) => this.moveSelectedAtoms(dx, dy)}
                     checkConsistency = {() => this.checkConsistency()}
+                    updateSquares = {() => this.updateSquares()}
                 />
                 <Menu 
                     selection = {this.state.selection}
@@ -77,7 +84,8 @@ class App extends React.Component {
                     'id': parseInt(line[0]),
                     'x':  parseFloat(line[1]),
                     'y':  parseFloat(line[2]),
-                    'z':  parseFloat(line[3])
+                    'z':  parseFloat(line[3]),
+                    'square': {row: Math.round(parseFloat(line[2]) / this.squareHeight), column: Math.round(parseFloat(line[1]) / this.squareWidth)}
                 })
 
                 this.totalAtoms++;
@@ -99,6 +107,10 @@ class App extends React.Component {
             }
         }
         
+        this.currentSquares();
+
+        console.log(atoms);
+
         this.setState({
             atoms: atoms,
             connections: connections,
@@ -109,6 +121,10 @@ class App extends React.Component {
             this.checkConsistency();
             console.log("checked consistency");
             this.canvas.createCanvas();
+            console.log("created canvas");
+
+            this.updateSquares();
+            
         });
     }
 
@@ -147,8 +163,8 @@ class App extends React.Component {
         console.log("Checking consistency of sample");
 
         let warnings = []
-        warnings = warnings.concat(this.checkAllThreeConnections());
-        warnings = warnings.concat(this.checkNoIntersections());
+        //warnings = warnings.concat(this.checkAllThreeConnections());
+        //warnings = warnings.concat(this.checkNoIntersections());
 
         // Necessity for consistency is checking some things twice,
         // e.g. when a onnection is removed, but also after replacing atom by trio,
@@ -246,6 +262,124 @@ class App extends React.Component {
 
         return warnings;
     }
+
+    updateSquares = () => {
+        this.setState({
+            squares: this.currentSquares()
+        }, () => {
+            this.setState({
+                visibleAtoms: this.visibleAtoms(),
+                visibleConnections: this.visibleConnections()
+            })
+        })
+    }
+
+    visibleAtoms = () => {
+        //return this.state.atoms;
+        //TODO: niet === 0 maar squares.rows.includes o.i.d.
+        let r = this.state.atoms.filter(atom => (this.state.squares.rows.includes(atom.square.row) && this.state.squares.columns.includes(atom.square.column)));
+        let edge = [];
+
+        for (let i = 0; i < this.state.connections.length; i++) {
+            let c = this.state.connections[i];
+
+            let a = this.state.atoms[this.atomIndexByID(c.a)];
+            let b = this.state.atoms[this.atomIndexByID(c.b)];
+
+            if (r.includes(a) && !r.includes(b) && !edge.includes(b)) {
+                edge.push(b);
+            }
+
+            if (r.includes(b) && !r.includes(a) && !edge.includes(a)) {
+                edge.push(a);
+            }
+        }
+
+        console.log(r);
+        console.log(r.concat(edge));
+        return r.concat(edge);
+    }
+
+    visibleConnections = () => {
+        return [];
+    }
+    
+    /*
+    Feels very hacky but I'm getting desperate
+    */
+    currentSquares = () => {
+        //let p = this.canvas.getCurrentPosition();
+
+        if (this.canvas === null) return {rows: [0], columns: [0]}
+        let p = this.canvas.state.dragged;
+
+        // Do it some distance out of bounds so they load before they are needed
+        let rowStart = Math.floor(-p.y / this.squareHeight - 30);
+        let rowEnd = Math.ceil(-p.y / this.squareHeight + 30);
+
+        let columnStart = Math.floor(-p.x / this.squareWidth - 30);
+        let columnEnd = Math.ceil(-p.x / this.squareWidth + 30);
+
+        let rows = [];
+        for (let i = rowStart; i <= rowEnd; i++) {
+            rows.push(i);
+        }
+
+        let columns = [];
+        for (let i = columnStart; i <= columnEnd; i++) {
+            columns.push(i);
+        }
+
+        console.log("rows: " + rows);
+        console.log("columns: " + columns);
+        return {rows: rows, columns: columns}
+    }
+    /*
+    currentSquares = () => {
+
+        //let scale = this.stage.scaleX();
+
+        
+        console.log("window");
+        console.log(window.innerWidth);
+        console.log(window.innerHeight);
+
+        let stageTopLeft = this.canvas.getStagePositionFromScreen(this.canvas.menuWidth, 0);
+        let stageBottomRight = this.canvas.getStagePositionFromScreen(window.innerWidth, window.innerHeight);
+
+        console.log("stage");
+        console.log(stageTopLeft);
+        console.log(stageBottomRight);
+
+        let topLeft = this.canvas.coordinateToScreenCoordinate(stageTopLeft.x, stageTopLeft.y);
+        let bottomRight = this.canvas.coordinateToScreenCoordinate(stageBottomRight.x, stageBottomRight.y);
+
+        console.log("coords")
+        console.log(topLeft);
+        console.log(bottomRight);
+
+        // Do it some distance out of bounds so they load before they are needed
+        let rowStart = Math.floor(topLeft.x / this.squareHeight - 3);
+        let rowEnd = Math.ceil(bottomRight.x / this.squareHeight + 3);
+
+        let columnStart = Math.floor(topLeft.y / this.squareWidth - 3);
+        let columnEnd = Math.ceil(bottomRight.y / this.squareWidth + 3);
+
+        let rows = [];
+        for (let i = rowStart; i <= rowEnd; i++) {
+            rows.push(i);
+        }
+
+        let columns = [];
+        for (let i = columnStart; i <= columnEnd; i++) {
+            columns.push(i);
+        }
+
+        console.log("rows: " + rows);
+        console.log("columns: " + columns);
+        return {rows: rows, columns: columns}
+    }
+    */
 
     // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
     // Determine the intersection point of two line segments
