@@ -68,7 +68,7 @@ class GrapheneCanvas extends React.Component {
                                         scale = {this.getCurrentScale()}
                                         points = {d.points}
                                         selected = {this.props.selection.type === 'connection' && this.props.selection.id === d.id}
-                                        addToSelection = {(c) => this.addConnectionToSelection(c)}
+                                        addToSelection = {(c) => this.props.addConnectionToSelection(c)}
                                     />
                                 })
                             })
@@ -86,7 +86,7 @@ class GrapheneCanvas extends React.Component {
                                     x = {coords.x}
                                     y = {coords.y}
                                     selected = {this.props.selection.type === 'atom' && this.props.selection.ids.includes(a.id)}
-                                    addToSelection = {(a) => this.addAtomToSelection(a)}
+                                    addToSelection = {(a) => this.props.addAtomToSelection(a)}
                                 />)
                             })
                         }
@@ -97,27 +97,18 @@ class GrapheneCanvas extends React.Component {
                             width = {this.state.centeringX}
                             height = {10 * this.props.height}
                             fill = {"#fff"}
-                            //fillLinearGradientStartPoint = {{x: 0, y: 0}}
-                            //fillLinearGradientEndPoint = {{x: this.state.centeringX, y: 0}}
-                            //fillLinearGradientColorStops={[0, "#ffff", 0.97, "#ffff", 1, "#fff0"]}
                     />
                     <Rect
                             x = {this.state.centeringX + this.props.width}
                             width = {this.state.centeringX}
                             height = {10 * this.props.height}
                             fill = {"#fff"}
-                            //fillLinearGradientStartPoint = {{x: 0, y: 0}}
-                            //fillLinearGradientEndPoint = {{x: this.state.centeringX + this.props.width, y: 0}}
-                            //fillLinearGradientColorStops={[0, "#fff0", 0.03, "#ffff", 1, "#ffff"]}
                     />
 
                     <Rect
                             width = {10 * this.props.width}
                             height = {this.state.centeringY}
                             fill = {"#fff"}
-                            //fillLinearGradientStartPoint = {{x: 0, y: 0}}
-                            //fillLinearGradientEndPoint = {{x: 0, y: this.state.centeringY}}
-                            //fillLinearGradientColorStops={[0, "#ffff", 0.97, "#ffff", 1, "#fff0"]}
                     />
 
                     <Rect
@@ -125,9 +116,6 @@ class GrapheneCanvas extends React.Component {
                             width = {10 * this.props.width}
                             height = {this.state.centeringY}
                             fill = {"#fff"}
-                            //fillLinearGradientStartPoint = {{x: 0, y: 0}}
-                            //fillLinearGradientEndPoint = {{x: this.state.centeringX + this.props.width, y: 0}}
-                            //fillLinearGradientColorStops={[0, "#fff0", 0.03, "#ffff", 1, "#ffff"]}
                     />
                     </Layer>
                 </Stage>
@@ -158,11 +146,7 @@ class GrapheneCanvas extends React.Component {
         let scaleX = (7 * window.innerWidth / 8) / this.props.width;
         let scaleY = (7 * window.innerHeight / 8) / this.props.height;
 
-        console.log(this.defaultScale);
-
         this.defaultScale = Math.max(40, Math.min(scaleX, scaleY));
-
-        console.log(this.defaultScale);
 
         this.setState({
             offsetx: this.props.width / 2,
@@ -215,8 +199,6 @@ class GrapheneCanvas extends React.Component {
                 dragStart: p
             })
         }
-        
-        //console.log(this.state.dragged);
     }
 
     stopDragging = (e) => {
@@ -227,8 +209,6 @@ class GrapheneCanvas extends React.Component {
         }, () => {
             //console.log(this.state.dragging);
         })
-
-        //console.log("dragging set to false")
     }
 
     centerOnItem = (type, id) => {
@@ -280,9 +260,6 @@ class GrapheneCanvas extends React.Component {
 
         let newscale = this.getCurrentScale() * factor;
 
-        //this.zoomStageTo(e.pageX, e.pageY, newscale);
-        //this.zoomStageTo(window.innerWidth / 2, window.innerHeight / 2, newscale);
-        console.log("newscale: " + newscale);
         this.zoomStageTo((window.innerWidth - this.menuWidth) / 2 + this.menuWidth, window.innerHeight / 2, newscale);
     }
 
@@ -290,7 +267,6 @@ class GrapheneCanvas extends React.Component {
         //if (newscale > this.state.maxscale) newscale = this.state.maxscale;
 
         if (newscale < this.state.minScale) {
-            console.log("restricting newscale to " + this.state.minScale);
             newscale = this.state.minScale;
         }
 
@@ -352,7 +328,6 @@ class GrapheneCanvas extends React.Component {
 
     handleKeyDown = (e) => {
         if (e.code === 'KeyQ') {
-            console.log("q pressed")
             if (!this.state.moveMode) {
                 this.setState({
                     moveMode: true
@@ -363,7 +338,6 @@ class GrapheneCanvas extends React.Component {
 
     handleKeyUp = (e) => {
         if (e.code === 'KeyQ') {
-            console.log("q no longer pressed")
             this.setState({
                 moveMode: false
             })
@@ -527,22 +501,6 @@ class GrapheneCanvas extends React.Component {
 
         return pos;
     }
-
-    addAtomToSelection = (id) => {
-        this.props.addAtomToSelection(id);
-    }
-
-    addConnectionToSelection = (id) => {
-        this.props.addConnectionToSelection(id);
-    }
-
-    /*
-    removeSelectedConnection = () => {
-        let id = this.props.selection.id;
-
-        console.log("removing connection " + id);
-    }
-    */
 }
 
 export default GrapheneCanvas
