@@ -11,8 +11,8 @@ class App extends React.Component {
     constructor(props) {
         super(props);
 
-        this.squareHeight = 5;
-        this.squareWidth = 5;
+        this.squareHeight = 2.8;
+        this.squareWidth = 2.8;
 
         this.state = {
             selection: {},
@@ -361,7 +361,7 @@ class App extends React.Component {
 
         let rows = [];
         let columns = [];
-        for(let i = -3; i <= 3; i++) {
+        for(let i = -6; i <= 6; i++) {
             for(let j = -3; j <= 3; j++) {
                 let s = this.coordToSquare(stageX + i * this.squareWidth, stageY + j * this.squareHeight);
 
