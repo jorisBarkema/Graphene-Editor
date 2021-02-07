@@ -470,7 +470,6 @@ class GrapheneCanvas extends React.Component {
             console.log(error)
         }
 
-        console.log("stage pos: " + pos.x + ", " + pos.y);
         return pos;
     }
 }

@@ -85,7 +85,7 @@ class App extends React.Component {
                     'x':  parseFloat(line[1]),
                     'y':  parseFloat(line[2]),
                     'z':  parseFloat(line[3]),
-                    'square': {row: Math.round(parseFloat(line[2]) / this.squareHeight), column: Math.round(parseFloat(line[1]) / this.squareWidth)}
+                    'square': this.coordToSquare(parseFloat(line[1]), parseFloat(line[2]), width, height)//{row: Math.round(parseFloat(line[2]) / this.squareHeight), column: Math.round(parseFloat(line[1]) / this.squareWidth)}
                 })
 
                 this.totalAtoms++;
@@ -107,10 +107,6 @@ class App extends React.Component {
             }
         }
         
-        this.currentSquares();
-
-        console.log(atoms);
-
         this.setState({
             atoms: atoms,
             connections: connections,
@@ -295,8 +291,8 @@ class App extends React.Component {
             }
         }
 
-        console.log(r);
-        console.log(r.concat(edge));
+        console.log(r.length + " atoms in screen");
+        console.log("showing " + r.concat(edge).length + " atoms");
         return r.concat(edge);
     }
 
@@ -307,18 +303,21 @@ class App extends React.Component {
     /*
     Feels very hacky but I'm getting desperate
     */
+    /*
     currentSquares = () => {
         //let p = this.canvas.getCurrentPosition();
 
         if (this.canvas === null) return {rows: [0], columns: [0]}
         let p = this.canvas.state.dragged;
 
-        // Do it some distance out of bounds so they load before they are needed
-        let rowStart = Math.floor(-p.y / this.squareHeight - 30);
-        let rowEnd = Math.ceil(-p.y / this.squareHeight + 30);
+        console.log(p);
 
-        let columnStart = Math.floor(-p.x / this.squareWidth - 30);
-        let columnEnd = Math.ceil(-p.x / this.squareWidth + 30);
+        // Do it some distance out of bounds so they load before they are needed
+        let rowStart = Math.floor(-(p.y % this.state.height) / this.squareHeight - 1);
+        let rowEnd = Math.ceil(-(p.y % this.state.height) / this.squareHeight + 1);
+
+        let columnStart = Math.floor(-(p.x % this.state.width) / this.squareWidth - 1);
+        let columnEnd = Math.ceil(-(p.x % this.state.width) / this.squareWidth + 1);
 
         let rows = [];
         for (let i = rowStart; i <= rowEnd; i++) {
@@ -334,8 +333,127 @@ class App extends React.Component {
         console.log("columns: " + columns);
         return {rows: rows, columns: columns}
     }
-    /*
+    */
+
+    coordToSquare = (x, y, width = this.state.width, height = this.state.height) => {
+
+        //x = ((x % this.state.width) + this.state.width) % this.state.width;
+        //y = ((y % this.state.height) + this.state.height) % this.state.height;
+
+        while(x < -width / 2) {
+            x += width;
+        }
+
+        while (x > width / 2) {
+            x -= width;
+        }
+
+        while(y < -height / 2) {
+            y += height;
+        }
+
+        while (y > height / 2) {
+            y -= height;
+        }
+
+        //console.log(x, y);
+        //console.log({row: Math.round(y / this.squareHeight), column: Math.round(x / this.squareWidth)});
+
+        return {row: Math.round(y / this.squareHeight), column: Math.round(x / this.squareWidth)}
+    }
+
+    // Given two squares, find the minimum rows and columns to include both squares
+    minimumCoveringSurface = (topleft, bottomright) => {
+        let rows = [];
+        let columns = [];
+
+        if (topleft.row <= bottomright.row) {
+            for (let i = topleft.row; i <= bottomright.row; i++) {
+                rows.push(i);
+            }
+        } else {
+            for (let i = topleft.row; i <= Math.ceil((this.state.height / 2) / this.squareHeight); i++) {
+                rows.push(i);
+            }
+            for (let i = Math.floor((-this.state.height / 2) / this.squareHeight); i <= bottomright.row; i++) {
+                rows.push(i);
+            }
+        }
+
+        if (topleft.column <= bottomright.column) {
+            for (let i = topleft.column; i <= bottomright.column; i++) {
+                columns.push(i);
+            }
+        } else {
+            for (let i = topleft.column; i <= Math.ceil((this.state.width / 2) / this.squareWidth); i++) {
+                columns.push(i);
+            }
+            for (let i = Math.floor((-this.state.width / 2) / this.squareWidth); i <= bottomright.column; i++) {
+                columns.push(i);
+            }
+        }
+
+        return {rows: rows, columns: columns}
+    }
+
     currentSquares = () => {
+
+        if (this.canvas === null) return {rows: [0], columns: [0]}
+
+        //let stageCenter = this.canvas.getStagePositionFromScreen((this.canvas.menuWidth + window.innerWidth) / 2, window.innerHeight / 2);
+        //let stageCenter = this.canvas.state.dragged;
+        let stageX = -this.canvas.state.dragged.x;
+        let stageY = -this.canvas.state.dragged.y;
+
+        //console.log("stage center (unfixed): " + stageX + ', ' + stageY);
+        // Prevent modulo from doing fishy stuff by doing this
+        // Feels a bit hacky though
+        while(stageX < -this.state.width / 2) {
+            stageX += this.state.width;
+        }
+
+        while (stageX > this.state.width / 2) {
+            stageX -= this.state.width;
+        }
+
+        while(stageY < -this.state.height / 2) {
+            stageY += this.state.height;
+        }
+
+        while (stageY > this.state.height / 2) {
+            stageY -= this.state.height;
+        }
+
+        //console.log("stage center   (fixed): " + stageX + ', ' + stageY);
+
+        let rows = [];
+        let columns = [];
+        for(let i = -3; i <= 3; i++) {
+            for(let j = -3; j <= 3; j++) {
+                let s = this.coordToSquare(stageX + i * this.squareWidth, stageY + j * this.squareHeight);
+
+                if (!rows.includes(s.row)) rows.push(s.row);
+                if (!columns.includes(s.column)) columns.push(s.column);
+            }
+        }
+        /*
+        let rows = [];
+        for (let i = Math.round(stageY - 5); i <= Math.round(stageY + 5); i++) {
+            rows.push(i);
+        }
+
+        let columns = [];
+        for (let i = Math.round(stageX - 5); i <= Math.round(stageX + 5); i++) {
+            columns.push(i);
+        }
+        */
+
+        console.log("rows: " + rows);
+        console.log("columns: " + columns);
+        return {rows: rows, columns: columns}
+    }
+
+    currentSquaresOld = () => {
 
         //let scale = this.stage.scaleX();
 
@@ -358,12 +476,22 @@ class App extends React.Component {
         console.log(topLeft);
         console.log(bottomRight);
 
+        let topLeftSquare = this.coordToSquare(topLeft.x, topLeft.y);
+        let bottomRightSquare = this.coordToSquare(bottomRight.x, bottomRight.y);
+
+        let squares = this.minimumCoveringSurface(topLeftSquare, bottomRightSquare);
+
+        console.log(squares.rows, squares.columns);
+
+        return squares;
         // Do it some distance out of bounds so they load before they are needed
+        /*
         let rowStart = Math.floor(topLeft.x / this.squareHeight - 3);
         let rowEnd = Math.ceil(bottomRight.x / this.squareHeight + 3);
 
         let columnStart = Math.floor(topLeft.y / this.squareWidth - 3);
         let columnEnd = Math.ceil(bottomRight.y / this.squareWidth + 3);
+        
 
         let rows = [];
         for (let i = rowStart; i <= rowEnd; i++) {
@@ -378,8 +506,8 @@ class App extends React.Component {
         console.log("rows: " + rows);
         console.log("columns: " + columns);
         return {rows: rows, columns: columns}
+        */
     }
-    */
 
     // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
     // Determine the intersection point of two line segments
