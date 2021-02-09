@@ -59,6 +59,7 @@ class App extends React.Component {
                     replaceSelectionByTrio = {() => this.replaceSelectionByTrio()}
                     loadText = {(t) => this.loadText(t)}
                     downloadFile = {() => this.downloadFile()}
+                    checkConsistency = {() => this.checkConsistency()}
                 />
             </div>
         );
@@ -112,10 +113,10 @@ class App extends React.Component {
             connections: connections,
             width: width,
             height: height,
+            warnings: [],
+            selection: {}
         }, () => {
             console.log("loaded text");
-            this.checkConsistency();
-            console.log("checked consistency");
             this.canvas.createCanvas();
             console.log("created canvas");
 
@@ -155,12 +156,12 @@ class App extends React.Component {
         document.body.removeChild(element);
     }
 
-    checkConsistency = () => {
+    checkConsistency = async() => {
         console.log("Checking consistency of sample");
 
         let warnings = []
-        //warnings = warnings.concat(this.checkAllThreeConnections());
-        //warnings = warnings.concat(this.checkNoIntersections());
+        warnings = warnings.concat(this.checkAllThreeConnections());
+        warnings = warnings.concat(this.checkNoIntersections());
 
         // Necessity for consistency is checking some things twice,
         // e.g. when a onnection is removed, but also after replacing atom by trio,
@@ -218,7 +219,8 @@ class App extends React.Component {
     }
 
     checkNoIntersections = () => {
-        let cs = this.state.connections;
+        //let cs = this.state.connections;
+        let cs = this.state.visibleConnections;
         let atoms = this.state.atoms;
 
         let warnings = [];
@@ -536,7 +538,7 @@ class App extends React.Component {
             connections: c,
             atoms: atoms
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -550,7 +552,7 @@ class App extends React.Component {
             selection: {},
             atoms: a
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -572,7 +574,7 @@ class App extends React.Component {
             connections: c,
             atoms: atoms
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -590,7 +592,7 @@ class App extends React.Component {
             connections: c,
             atoms: atoms
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -718,7 +720,7 @@ class App extends React.Component {
             atoms: atoms,
             connections: connections
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -833,7 +835,7 @@ class App extends React.Component {
             atoms: atoms,
             connections: connections
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
