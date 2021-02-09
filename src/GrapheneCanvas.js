@@ -304,10 +304,10 @@ class GrapheneCanvas extends React.Component {
     }
 
     handleClick = (e) => {
-        let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
+        //let p = this.getStagePositionFromScreen(e.pageX, e.pageY);
 
-        console.log("screen position: " + e.pageX + ", " + e.pageY);
-        console.log("stage position: " + p.x + ", " + p.y);
+        //console.log("screen position: " + e.pageX + ", " + e.pageY);
+        //console.log("stage position: " + p.x + ", " + p.y);
     }
 
     handleKeyDown = (e) => {

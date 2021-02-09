@@ -80,13 +80,14 @@ class App extends React.Component {
             let line = lines[i].split(/\s+/);
             
             // An atom has 4 properties: id x y z
+            // Also assign it a square to handle big files
             if (line.length === 4) {
                 atoms.push({
                     'id': parseInt(line[0]),
                     'x':  parseFloat(line[1]),
                     'y':  parseFloat(line[2]),
                     'z':  parseFloat(line[3]),
-                    'square': this.coordToSquare(parseFloat(line[1]), parseFloat(line[2]), width, height)//{row: Math.round(parseFloat(line[2]) / this.squareHeight), column: Math.round(parseFloat(line[1]) / this.squareWidth)}
+                    'square': this.coordToSquare(parseFloat(line[1]), parseFloat(line[2]), width, height)
                 })
 
                 this.totalAtoms++;
@@ -116,9 +117,7 @@ class App extends React.Component {
             warnings: [],
             selection: {}
         }, () => {
-            console.log("loaded text");
             this.canvas.createCanvas();
-            console.log("created canvas");
 
             this.updateSquares();
             
@@ -157,8 +156,6 @@ class App extends React.Component {
     }
 
     checkConsistency = async() => {
-        console.log("Checking consistency of sample");
-
         let warnings = []
         warnings = warnings.concat(this.checkAllThreeConnections());
         warnings = warnings.concat(this.checkNoIntersections());
@@ -219,8 +216,7 @@ class App extends React.Component {
     }
 
     checkNoIntersections = () => {
-        //let cs = this.state.connections;
-        let cs = this.state.visibleConnections;
+        let cs = this.state.connections.length > 500 ? this.state.visibleConnections : this.state.connections;
         let atoms = this.state.atoms;
 
         let warnings = [];
@@ -293,9 +289,7 @@ class App extends React.Component {
                 edge.push(a);
             }
         }
-
-        console.log(r.length + " atoms in screen");
-        console.log("showing " + r.concat(edge).length + " atoms");
+        
         return r.concat(edge);
     }
 
@@ -309,9 +303,6 @@ class App extends React.Component {
     }
 
     coordToSquare = (x, y, width = this.state.width, height = this.state.height) => {
-
-        //x = ((x % this.state.width) + this.state.width) % this.state.width;
-        //y = ((y % this.state.height) + this.state.height) % this.state.height;
 
         while(x < -width / 2) {
             x += width;
@@ -329,9 +320,6 @@ class App extends React.Component {
             y -= height;
         }
 
-        //console.log(x, y);
-        //console.log({row: Math.round(y / this.squareHeight), column: Math.round(x / this.squareWidth)});
-
         return {row: Math.round(y / this.squareHeight), column: Math.round(x / this.squareWidth)}
     }
 
@@ -343,7 +331,7 @@ class App extends React.Component {
         let stageY = -this.canvas.state.dragged.y;
 
         // Prevent modulo from doing fishy stuff by doing this
-        // Feels a bit hacky though
+        // Feels a bit hacky though and it is repeated a few times, not very neat
         while(stageX < -this.state.width / 2) {
             stageX += this.state.width;
         }
@@ -372,42 +360,7 @@ class App extends React.Component {
             }
         }
 
-        console.log("rows: " + rows);
-        console.log("columns: " + columns);
         return {rows: rows, columns: columns}
-    }
-
-    currentSquaresOld = () => {
-
-        //let scale = this.stage.scaleX();
-
-        
-        console.log("window");
-        console.log(window.innerWidth);
-        console.log(window.innerHeight);
-
-        let stageTopLeft = this.canvas.getStagePositionFromScreen(this.canvas.menuWidth, 0);
-        let stageBottomRight = this.canvas.getStagePositionFromScreen(window.innerWidth, window.innerHeight);
-
-        console.log("stage");
-        console.log(stageTopLeft);
-        console.log(stageBottomRight);
-
-        let topLeft = this.canvas.coordinateToScreenCoordinate(stageTopLeft.x, stageTopLeft.y);
-        let bottomRight = this.canvas.coordinateToScreenCoordinate(stageBottomRight.x, stageBottomRight.y);
-
-        console.log("coords")
-        console.log(topLeft);
-        console.log(bottomRight);
-
-        let topLeftSquare = this.coordToSquare(topLeft.x, topLeft.y);
-        let bottomRightSquare = this.coordToSquare(bottomRight.x, bottomRight.y);
-
-        let squares = this.minimumCoveringSurface(topLeftSquare, bottomRightSquare);
-
-        console.log(squares.rows, squares.columns);
-
-        return squares;
     }
 
     // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
@@ -519,8 +472,6 @@ class App extends React.Component {
 
     removeSelectedConnection = () => {
         let id = this.state.selection.id;
-
-        console.log("removing connection " + id);
 
         this.removeConnectionByID(id);
     }
