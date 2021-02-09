@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stage, Layer, Rect} from 'react-konva';
+import { Stage, Layer, Rect } from 'react-konva';
 
 import Atom from './Atom.js';
 import Connection from './Connection.js';
@@ -17,7 +17,6 @@ class GrapheneCanvas extends React.Component {
             selection: {},
             offsetx: 0,
             offsety: 0,
-            squares: {rows: [0], columns: [0]},
             centeringX: 0,
             centeringY: 0,
             totalWidth: window.innerWidth,
@@ -36,6 +35,9 @@ class GrapheneCanvas extends React.Component {
 
         return (
             <div id="canvas-container">
+                <div id="coord-container">
+                    <span>{-this.state.dragged.x.toFixed(2)}, {-this.state.dragged.y.toFixed(2)}</span>
+                </div>
                 <Stage 
                     width={this.state.totalWidth} 
                     height={this.state.totalHeight}
@@ -54,7 +56,7 @@ class GrapheneCanvas extends React.Component {
                             height = {this.props.height}
                             stroke = 'black'
                             strokeWidth = {0.02}
-                            fill= {'rgb(220, 220, 220'}
+                            fill= {'rgb(220, 220, 220)'}
                         />
 
                         {
@@ -163,9 +165,6 @@ class GrapheneCanvas extends React.Component {
                 centeringY: ((window.innerHeight - screenBottomRight.y) / this.state.currentScale) / 2
             }, () => {
                 console.log("Created canvas");
-                this.setState({
-                    squares: this.currentSquares()
-                });
             });
         });
     }
@@ -192,10 +191,30 @@ class GrapheneCanvas extends React.Component {
 
             this.props.moveSelectedAtoms(p.x - s.x, p.y - s.y);
         } else {
+
+            let nx = this.state.dragged.x + p.x - s.x;
+            let ny = this.state.dragged.y + p.y - s.y;
+
+            while(nx < -this.props.width / 2) {
+                nx += this.props.width;
+            }
+    
+            while (nx > this.props.width / 2) {
+                nx -= this.props.width;
+            }
+    
+            while(ny < -this.props.height / 2) {
+                ny += this.props.height;
+            }
+    
+            while (ny > this.props.height / 2) {
+                ny -= this.props.height;
+            }
+
             this.setState({
                 dragged: {
-                    x: this.state.dragged.x + p.x - s.x,
-                    y: this.state.dragged.y + p.y - s.y
+                    x: nx,
+                    y: ny
                 },
                 dragStart: p
             })
@@ -203,8 +222,9 @@ class GrapheneCanvas extends React.Component {
     }
 
     stopDragging = (e) => {
-        this.props.checkConsistency();
-
+        //this.props.checkConsistency();
+        this.props.updateSquares();
+        
         this.setState({
             dragging: false
         }, () => {
@@ -216,12 +236,7 @@ class GrapheneCanvas extends React.Component {
         if (type === 'atom') {
             let a = this.props.atoms[this.atomIndexByID(id)];
 
-            this.setState({
-                dragged: {
-                    x: -a.x,
-                    y: -a.y
-                }
-            })
+            this.centerOnLocation(a.x, a.y);
         }
 
         // It would be cleaner to do this to focus on the average of a and b,
@@ -231,12 +246,7 @@ class GrapheneCanvas extends React.Component {
             let c = this.props.connections[this.connectionIndexByID(id)];
             let a = this.props.atoms[this.atomIndexByID(c.a)];
 
-            this.setState({
-                dragged: {
-                    x: -a.x,
-                    y: -a.y
-                }
-            })
+            this.centerOnLocation(a.x, a.y);
         }
     }
 
@@ -246,7 +256,7 @@ class GrapheneCanvas extends React.Component {
                 x: -x,
                 y: -y
             }
-        })
+        }, () => this.props.updateSquares())
     }
 
     zoomStage = (e) => {
@@ -291,33 +301,6 @@ class GrapheneCanvas extends React.Component {
             onFinish: () => {
             }
         });
-    }
-
-    currentSquares = () => {
-
-        //let scale = this.stage.scaleX();
-
-        // Do it some distance out of bounds so they load before they are needed
-        let topLeft = this.getStagePositionFromScreen(0, 0);
-        let bottomRight = this.getStagePositionFromScreen(window.innerWidth, window.innerHeight);
-
-        let rowStart = Math.floor(topLeft.x / this.props.height - 1);
-        let rowEnd = Math.ceil(bottomRight.x / this.props.height + 1);
-
-        let columnStart = Math.floor(topLeft.y / this.props.width - 1);
-        let columnEnd = Math.ceil(bottomRight.y / this.props.width + 1);
-
-        let rows = [];
-        for (let i = rowStart; i <= rowEnd; i++) {
-            rows.push(i);
-        }
-
-        let columns = [];
-        for (let i = columnStart; i <= columnEnd; i++) {
-            columns.push(i);
-        }
-
-        return {rows: rows, columns: columns}
     }
 
     handleClick = (e) => {
@@ -497,7 +480,7 @@ class GrapheneCanvas extends React.Component {
         try {
             pos = this.stage.absolutePosition();
         } catch(error) {
-            //console.log(error)
+            console.log(error)
         }
 
         return pos;

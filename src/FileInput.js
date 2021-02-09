@@ -10,11 +10,9 @@ class FileInput extends React.Component {
     
     uploadFile(event) {
         let file = event.target.files[0];
-        console.log(file);
         
         if (file) {
             file.text().then((t) => {
-                console.log(t);
                 this.props.loadText(t);
                 
                 let input = document.getElementsByName("fileInput")[0];

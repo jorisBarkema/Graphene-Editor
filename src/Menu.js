@@ -11,6 +11,7 @@ import GetAppIcon from '@material-ui/icons/GetApp';
 import PublishIcon from '@material-ui/icons/Publish';
 //import ControlCameraIcon from '@material-ui/icons/ControlCamera';
 import FilterCenterFocusIcon from '@material-ui/icons/FilterCenterFocus';
+import CheckIcon from '@material-ui/icons/Check';
 
 
 import FileInput from './FileInput.js';
@@ -83,16 +84,26 @@ class Menu extends React.Component {
                             <span className='button-text'>EXPORT FILE</span>
                         </IconButton>
                     </div>
-                    {
-                        this.props.warnings.length > 0 ? 
-                        <div id="warning-container">
-                            {
-                                this.props.warnings.map((warning, index) => {
-                                    return <Warning {...warning} key={index} centerOnLocation={(x, y) => this.props.centerOnLocation(x, y)} centerOnItem={(t, id) => this.props.centerOnItem(t, id)} />;
-                                })
-                            }
-                        </div> : null
-                    }
+                    <div id="warning-container">
+                        <div className='button-container'>
+                            <IconButton size="medium" onClick={()=>{this.props.checkConsistency()}} style={{fontSize: 14}} aria-label="download">
+                                <CheckIcon size="large" />
+                                <span className='button-text'>CHECK CONSISTENCY</span>
+                            </IconButton>
+                        </div>
+                        {
+                            this.props.connections.length > 500 ? 
+                            <p>
+                                Because of the size of the sample this function will only look at part of the sample.
+                            </p> : null
+                        }
+                        
+                        {
+                            this.props.warnings.map((warning, index) => {
+                                return <Warning {...warning} key={index} centerOnLocation={(x, y) => this.props.centerOnLocation(x, y)} centerOnItem={(t, id) => this.props.centerOnItem(t, id)} />;
+                            })
+                        }
+                    </div>
                     <div id="documentation-container">
                         <p>
                             Add any number of atoms or a single connection to the selection by clicking on them.

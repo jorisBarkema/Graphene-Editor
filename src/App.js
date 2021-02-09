@@ -11,10 +11,16 @@ class App extends React.Component {
     constructor(props) {
         super(props);
 
+        this.squareHeight = 2.8;
+        this.squareWidth = 2.8;
+
         this.state = {
             selection: {},
             atoms: [],
             connections: [],
+            squares: {rows: [], columns: []},
+            visibleAtoms: [],
+            visibleConnections: [],
             width: 5,
             height: 5,
             warnings: []
@@ -29,14 +35,15 @@ class App extends React.Component {
                 <GrapheneCanvas
                     ref={ref => (this.canvas = ref)}
                     selection = {this.state.selection}
-                    atoms = {this.state.atoms}
-                    connections = {this.state.connections}
+                    atoms = {this.state.visibleAtoms}
+                    connections = {this.state.visibleConnections}
                     width = {this.state.width}
                     height = {this.state.height}
                     addAtomToSelection = {(id) => this.addAtomToSelection(id)}
                     addConnectionToSelection = {(id) => this.addConnectionToSelection(id)}
                     moveSelectedAtoms = {(dx, dy) => this.moveSelectedAtoms(dx, dy)}
                     checkConsistency = {() => this.checkConsistency()}
+                    updateSquares = {() => this.updateSquares()}
                 />
                 <Menu 
                     selection = {this.state.selection}
@@ -52,6 +59,7 @@ class App extends React.Component {
                     replaceSelectionByTrio = {() => this.replaceSelectionByTrio()}
                     loadText = {(t) => this.loadText(t)}
                     downloadFile = {() => this.downloadFile()}
+                    checkConsistency = {() => this.checkConsistency()}
                 />
             </div>
         );
@@ -72,12 +80,14 @@ class App extends React.Component {
             let line = lines[i].split(/\s+/);
             
             // An atom has 4 properties: id x y z
+            // Also assign it a square to handle big files
             if (line.length === 4) {
                 atoms.push({
                     'id': parseInt(line[0]),
                     'x':  parseFloat(line[1]),
                     'y':  parseFloat(line[2]),
-                    'z':  parseFloat(line[3])
+                    'z':  parseFloat(line[3]),
+                    'square': this.coordToSquare(parseFloat(line[1]), parseFloat(line[2]), width, height)
                 })
 
                 this.totalAtoms++;
@@ -104,11 +114,13 @@ class App extends React.Component {
             connections: connections,
             width: width,
             height: height,
+            warnings: [],
+            selection: {}
         }, () => {
-            console.log("loaded text");
-            this.checkConsistency();
-            console.log("checked consistency");
             this.canvas.createCanvas();
+
+            this.updateSquares();
+            
         });
     }
 
@@ -143,9 +155,7 @@ class App extends React.Component {
         document.body.removeChild(element);
     }
 
-    checkConsistency = () => {
-        console.log("Checking consistency of sample");
-
+    checkConsistency = async() => {
         let warnings = []
         warnings = warnings.concat(this.checkAllThreeConnections());
         warnings = warnings.concat(this.checkNoIntersections());
@@ -206,7 +216,7 @@ class App extends React.Component {
     }
 
     checkNoIntersections = () => {
-        let cs = this.state.connections;
+        let cs = this.state.connections.length > 500 ? this.state.visibleConnections : this.state.connections;
         let atoms = this.state.atoms;
 
         let warnings = [];
@@ -245,6 +255,112 @@ class App extends React.Component {
         }
 
         return warnings;
+    }
+
+    updateSquares = () => {
+        this.setState({
+            squares: this.currentSquares()
+        }, () => {
+
+            let as = this.visibleAtoms();
+            this.setState({
+                visibleAtoms: as,
+                visibleConnections: this.visibleConnections(as)
+            })
+        })
+    }
+
+    visibleAtoms = () => {
+        
+        let r = this.state.atoms.filter(atom => (this.state.squares.rows.includes(atom.square.row) && this.state.squares.columns.includes(atom.square.column)));
+        let edge = [];
+
+        for (let i = 0; i < this.state.connections.length; i++) {
+            let c = this.state.connections[i];
+
+            let a = this.state.atoms[this.atomIndexByID(c.a)];
+            let b = this.state.atoms[this.atomIndexByID(c.b)];
+
+            if (r.includes(a) && !r.includes(b) && !edge.includes(b)) {
+                edge.push(b);
+            }
+
+            if (r.includes(b) && !r.includes(a) && !edge.includes(a)) {
+                edge.push(a);
+            }
+        }
+        
+        return r.concat(edge);
+    }
+
+    visibleConnections = (visibleAtoms) => {
+
+        let atomIDs = visibleAtoms.map(a => a.id);
+
+        let r = this.state.connections.filter(c => (atomIDs.includes(c.a) && atomIDs.includes(c.b)));
+
+        return r;
+    }
+
+    coordToSquare = (x, y, width = this.state.width, height = this.state.height) => {
+
+        while(x < -width / 2) {
+            x += width;
+        }
+
+        while (x > width / 2) {
+            x -= width;
+        }
+
+        while(y < -height / 2) {
+            y += height;
+        }
+
+        while (y > height / 2) {
+            y -= height;
+        }
+
+        return {row: Math.round(y / this.squareHeight), column: Math.round(x / this.squareWidth)}
+    }
+
+    currentSquares = () => {
+
+        if (this.canvas === null) return {rows: [0], columns: [0]}
+
+        let stageX = -this.canvas.state.dragged.x;
+        let stageY = -this.canvas.state.dragged.y;
+
+        // Prevent modulo from doing fishy stuff by doing this
+        // Feels a bit hacky though and it is repeated a few times, not very neat
+        while(stageX < -this.state.width / 2) {
+            stageX += this.state.width;
+        }
+
+        while (stageX > this.state.width / 2) {
+            stageX -= this.state.width;
+        }
+
+        while(stageY < -this.state.height / 2) {
+            stageY += this.state.height;
+        }
+
+        while (stageY > this.state.height / 2) {
+            stageY -= this.state.height;
+        }
+
+
+        let rows = [];
+        let columns = [];
+        for(let i = -6; i <= 6; i++) {
+            for(let j = -3; j <= 3; j++) {
+                let s = this.coordToSquare(stageX + i * this.squareWidth, stageY + j * this.squareHeight);
+
+                if (!rows.includes(s.row)) rows.push(s.row);
+                if (!columns.includes(s.column)) columns.push(s.column);
+            }
+        }
+
+        return {rows: rows, columns: columns}
     }
 
     // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
@@ -357,8 +473,6 @@ class App extends React.Component {
     removeSelectedConnection = () => {
         let id = this.state.selection.id;
 
-        console.log("removing connection " + id);
-
         this.removeConnectionByID(id);
     }
 
@@ -375,7 +489,7 @@ class App extends React.Component {
             connections: c,
             atoms: atoms
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -389,7 +503,7 @@ class App extends React.Component {
             selection: {},
             atoms: a
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -411,7 +525,7 @@ class App extends React.Component {
             connections: c,
             atoms: atoms
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -429,7 +543,7 @@ class App extends React.Component {
             connections: c,
             atoms: atoms
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -557,7 +671,7 @@ class App extends React.Component {
             atoms: atoms,
             connections: connections
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 
@@ -672,7 +786,7 @@ class App extends React.Component {
             atoms: atoms,
             connections: connections
         }, () => {
-            this.checkConsistency();
+            //this.checkConsistency();
         })
     }
 

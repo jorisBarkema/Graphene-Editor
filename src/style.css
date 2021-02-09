@@ -12,6 +12,24 @@ body {
     font-family: Verdana, sans-serif;
 }
 
+#coord-container {
+    width: 100vw;
+    
+    font-size: 12;
+    position: fixed;
+    top: 0px;
+
+    z-index: 100;
+}
+
+#coord-container span {
+    float: right;
+    background-color: rgb(220, 220, 220);
+    padding: 3px;
+    border-bottom: 1px solid black;
+    border-left: 1px solid black;
+}
+
 #canvas-container {
     position: relative;
     top: 0px;
@@ -38,6 +56,11 @@ body {
     border-right: 2px solid rgb(150, 150, 150);
 
     overflow: auto;
+    direction: rtl;
+}
+
+#menu-container * {
+    direction: ltr;
 }
 
 .button-container {
