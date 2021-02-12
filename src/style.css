@@ -115,3 +115,8 @@ p {
 .warning {
     margin-bottom: 15px;
 }
+
+#id-input {
+    width: 70px;
+    margin-left: 40px;
+}

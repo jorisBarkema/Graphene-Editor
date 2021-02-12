@@ -26,4 +26,4 @@ For example:
 0	0       1
 ```
 gives two atoms at (-1, -2, 0) and (-2, -1, 0) which are connected to each other.
-The values for a connection or atom must be separated by whitespace.
+The values for a connection or atom must be separated by whitespace and IDs are expected to be natural numbers.

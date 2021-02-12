@@ -30,6 +30,15 @@ class Menu extends React.Component {
         return (
             <div id="menu-container">
                 <div>
+                <div className='button-container'>
+                        <IconButton size="medium" 
+                                    style={{fontSize: 14}} aria-label="add"
+                                    onClick = {() => this.props.goToAtom()}>
+                            <FilterCenterFocusIcon size="large" />
+                            <span className='button-text'>CENTER ON ATOM BY ID</span>
+                        </IconButton>
+                        <input id="id-input" name="id-input" type="number"></input>
+                    </div>
                     <div className='button-container'>
                         <IconButton disabled = {this.selectionIsEmpty()} size="medium" 
                                     style={{fontSize: 14}} aria-label="add"
@@ -118,6 +127,15 @@ class Menu extends React.Component {
                 </div>
             </div>
         )
+    }
+    
+    componentDidMount = () => {
+        let input = document.getElementById("id-input");
+
+        input.addEventListener('input', (event) => {
+            //console.log(event.target.value);
+            this.props.setGoToAtomID(event.target.value);
+        });
     }
 
     selectionIsEmpty = () => {

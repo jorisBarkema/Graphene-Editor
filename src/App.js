@@ -13,6 +13,7 @@ class App extends React.Component {
 
         this.squareHeight = 2.8;
         this.squareWidth = 2.8;
+        this.goToAtomID = NaN;
 
         this.state = {
             selection: {},
@@ -60,6 +61,8 @@ class App extends React.Component {
                     loadText = {(t) => this.loadText(t)}
                     downloadFile = {() => this.downloadFile()}
                     checkConsistency = {() => this.checkConsistency()}
+                    setGoToAtomID = {(n) => this.goToAtomID = n}
+                    goToAtom = {() => this.goToAtom()}
                 />
             </div>
         );
@@ -459,6 +462,14 @@ class App extends React.Component {
         if (s.type === 'connection') id = s.id;
 
         this.centerOnItem(s.type, id);
+    }
+
+    goToAtom = () => {
+        if (Number.isNaN(this.goToAtomID)) return;
+
+        if (this.atomIndexByID(parseInt(this.goToAtomID)) === null) return;
+
+        this.canvas.centerOnItem('atom', parseInt(this.goToAtomID));
     }
 
     centerOnItem = (type, id) => {
