@@ -469,7 +469,10 @@ class App extends React.Component {
 
         if (this.atomIndexByID(parseInt(this.goToAtomID)) === null) return;
 
-        this.canvas.centerOnItem('atom', parseInt(this.goToAtomID));
+        // Select atom location here, because the canvas may not have all the atoms if they are out of view.
+        let a = this.atoms[this.atomIndexByID(parseInt(this.goToAtomID))];
+
+        this.canvas.centerOnLocation(a.x, a.y);
     }
 
     centerOnItem = (type, id) => {
