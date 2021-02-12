@@ -1,22 +1,22 @@
 {
   "files": {
-    "main.css": "/Graphene-Editor/static/css/main.2bfd8991.chunk.css",
-    "main.js": "/Graphene-Editor/static/js/main.ecc44623.chunk.js",
-    "main.js.map": "/Graphene-Editor/static/js/main.ecc44623.chunk.js.map",
+    "main.css": "/Graphene-Editor/static/css/main.236e32c3.chunk.css",
+    "main.js": "/Graphene-Editor/static/js/main.a869401f.chunk.js",
+    "main.js.map": "/Graphene-Editor/static/js/main.a869401f.chunk.js.map",
     "runtime-main.js": "/Graphene-Editor/static/js/runtime-main.d38a988b.js",
     "runtime-main.js.map": "/Graphene-Editor/static/js/runtime-main.d38a988b.js.map",
-    "static/js/2.1485517b.chunk.js": "/Graphene-Editor/static/js/2.1485517b.chunk.js",
-    "static/js/2.1485517b.chunk.js.map": "/Graphene-Editor/static/js/2.1485517b.chunk.js.map",
+    "static/js/2.64063d49.chunk.js": "/Graphene-Editor/static/js/2.64063d49.chunk.js",
+    "static/js/2.64063d49.chunk.js.map": "/Graphene-Editor/static/js/2.64063d49.chunk.js.map",
     "static/js/3.101c515b.chunk.js": "/Graphene-Editor/static/js/3.101c515b.chunk.js",
     "static/js/3.101c515b.chunk.js.map": "/Graphene-Editor/static/js/3.101c515b.chunk.js.map",
     "index.html": "/Graphene-Editor/index.html",
-    "static/css/main.2bfd8991.chunk.css.map": "/Graphene-Editor/static/css/main.2bfd8991.chunk.css.map",
-    "static/js/2.1485517b.chunk.js.LICENSE.txt": "/Graphene-Editor/static/js/2.1485517b.chunk.js.LICENSE.txt"
+    "static/css/main.236e32c3.chunk.css.map": "/Graphene-Editor/static/css/main.236e32c3.chunk.css.map",
+    "static/js/2.64063d49.chunk.js.LICENSE.txt": "/Graphene-Editor/static/js/2.64063d49.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.d38a988b.js",
-    "static/js/2.1485517b.chunk.js",
-    "static/css/main.2bfd8991.chunk.css",
-    "static/js/main.ecc44623.chunk.js"
+    "static/js/2.64063d49.chunk.js",
+    "static/css/main.236e32c3.chunk.css",
+    "static/js/main.a869401f.chunk.js"
   ]
 }
