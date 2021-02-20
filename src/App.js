@@ -11,8 +11,8 @@ class App extends React.Component {
     constructor(props) {
         super(props);
 
-        this.squareHeight = 2.8;
-        this.squareWidth = 2.8;
+        this.squareHeight = 0.6;
+        this.squareWidth = 0.6;
         this.goToAtomID = NaN;
 
         this.state = {
@@ -273,16 +273,19 @@ class App extends React.Component {
         })
     }
 
-    visibleAtoms = () => {
+    visibleAtoms = (atoms = null) => {
         
-        let r = this.state.atoms.filter(atom => (this.state.squares.rows.includes(atom.square.row) && this.state.squares.columns.includes(atom.square.column)));
+        if (atoms == null) atoms = this.state.atoms;
+        let connections = this.state.connections;
+
+        let r = atoms.filter(atom => (this.state.squares.rows.includes(atom.square.row) && this.state.squares.columns.includes(atom.square.column)));
         let edge = [];
 
         for (let i = 0; i < this.state.connections.length; i++) {
-            let c = this.state.connections[i];
+            let c = connections[i];
 
-            let a = this.state.atoms[this.atomIndexByID(c.a)];
-            let b = this.state.atoms[this.atomIndexByID(c.b)];
+            let a = atoms[this.atomIndexByID(c.a)];
+            let b = atoms[this.atomIndexByID(c.b)];
 
             if (r.includes(a) && !r.includes(b) && !edge.includes(b)) {
                 edge.push(b);
@@ -302,6 +305,8 @@ class App extends React.Component {
 
         let r = this.state.connections.filter(c => (atomIDs.includes(c.a) && atomIDs.includes(c.b)));
 
+        console.log(atomIDs.length + " visible atoms");
+        console.log(r.length + " visible connections");
         return r;
     }
 
@@ -352,10 +357,12 @@ class App extends React.Component {
         }
 
 
+        // Something goes wrong here on the edges of the sample
+        // I do not know why though
         let rows = [];
         let columns = [];
-        for(let i = -6; i <= 6; i++) {
-            for(let j = -3; j <= 3; j++) {
+        for(let i = -30; i <= 30; i++) {
+            for(let j = -20; j <= 20; j++) {
                 let s = this.coordToSquare(stageX + i * this.squareWidth, stageY + j * this.squareHeight);
 
                 if (!rows.includes(s.row)) rows.push(s.row);
@@ -604,6 +611,7 @@ class App extends React.Component {
 
     replaceSelectionByAtom = () => {
         let atoms = this.state.atoms;
+
         let connections = this.state.connections;
 
         let new_id = this.totalAtoms;
@@ -641,12 +649,15 @@ class App extends React.Component {
             atoms.splice(index, 1);
         }
 
-        atoms.push({
+        let new_atom = {
             'id': new_id,
             'x': x,
             'y': y,
-            'z': z
-        })
+            'z': z,
+            'square': this.coordToSquare(x, y, this.state.width, this.state.height)
+        };
+
+        atoms.push(new_atom);
 
         let madeConnectionFrom = [];
 
@@ -676,17 +687,19 @@ class App extends React.Component {
                 }
             }
         }
-                
+        
 
         this.totalAtoms++;
 
+        let as = this.visibleAtoms(atoms);
+
         this.setState({
+            visibleAtoms: as,
+            visibleConnections: this.visibleConnections(as),
             selection: {},
             atoms: atoms,
             connections: connections
-        }, () => {
-            //this.checkConsistency();
-        })
+        });
     }
 
     replaceSelectionByTrio = () => {
@@ -732,21 +745,24 @@ class App extends React.Component {
             'id': id1,
             'x': x + closest_distance / 2,
             'y': y,
-            'z': z
+            'z': z,
+            'square': this.coordToSquare(x + closest_distance / 2, y, this.state.width, this.state.height)
         };
 
         let second = {
             'id': id2,
             'x': x - closest_distance / 2,
             'y': y,
-            'z': z
+            'z': z,
+            'square': this.coordToSquare(x - closest_distance / 2, y, this.state.width, this.state.height)
         };
 
         let third = {
             'id': id3,
             'x': x,
             'y': y - closest_distance / 2,
-            'z': z
+            'z': z,
+            'square': this.coordToSquare(x, y - closest_distance / 2, this.state.width, this.state.height)
         };
 
         atoms.push(first);
@@ -795,13 +811,15 @@ class App extends React.Component {
             }
         }
 
+        let as = this.visibleAtoms(atoms);
+
         this.setState({
+            visibleAtoms: as,
+            visibleConnections: this.visibleConnections(as),
             selection: {},
             atoms: atoms,
             connections: connections
-        }, () => {
-            //this.checkConsistency();
-        })
+        });
     }
 
     connectionIndexByID = (id) => {

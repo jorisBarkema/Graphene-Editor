@@ -118,7 +118,7 @@ class Menu extends React.Component {
                             Add any number of atoms or a single connection to the selection by clicking on them.
                         </p>
                         <p>
-                            Drag the canvas to move around, hold Q and drag to move selected atoms.
+                            Drag the canvas to move around, hold Q and drag the canvas to move selected atoms.
                         </p>
                         <p>
                             For more information on how to use this editor, read the README on <a href="https://github.com/jorisBarkema/Graphene-Editor">Github</a>
