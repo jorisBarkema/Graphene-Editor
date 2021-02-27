@@ -273,6 +273,16 @@ class App extends React.Component {
         })
     }
 
+    resetVisibility = () => {
+        let as = this.visibleAtoms();
+        let cs = this.visibleConnections(as);
+
+        this.setState({
+            visibleAtoms: as,
+            visibleConnections: cs
+        })
+    }
+
     visibleAtoms = (atoms = null) => {
         
         if (atoms == null) atoms = this.state.atoms;
@@ -299,14 +309,18 @@ class App extends React.Component {
         return r.concat(edge);
     }
 
-    visibleConnections = (visibleAtoms) => {
+    visibleConnections = (visibleAtoms, connections = this.state.connections) => {
 
         let atomIDs = visibleAtoms.map(a => a.id);
 
-        let r = this.state.connections.filter(c => (atomIDs.includes(c.a) && atomIDs.includes(c.b)));
+        let r = connections.filter(c => (atomIDs.includes(c.a) && atomIDs.includes(c.b)));
 
         console.log(atomIDs.length + " visible atoms");
         console.log(r.length + " visible connections");
+
+        console.log(this.state.atoms.length + " total atoms");
+        console.log(connections.length + " total connections");
+
         return r;
     }
 
@@ -510,7 +524,7 @@ class App extends React.Component {
             connections: c,
             atoms: atoms
         }, () => {
-            //this.checkConsistency();
+            this.resetVisibility();
         })
     }
 
@@ -524,48 +538,35 @@ class App extends React.Component {
             selection: {},
             atoms: a
         }, () => {
-            //this.checkConsistency();
+            this.resetVisibility();
         })
     }
 
     addConnectionBetweenSelectedAtoms = () => {
 
-        let c = this.state.connections;
-        let atoms = this.state.atoms;
-
         let a = this.state.selection.ids[0];
         let b = this.state.selection.ids[1];
 
-        c.push({
+        this.addConnectionBetweenAtoms(a, b);
+    }
+
+    addConnectionBetweenAtoms = (a, b, visible = true) => {
+        let c = this.state.connections;
+        let vc = this.state.visibleConnections;
+
+        let new_connection = {
             'id': this.totalConnections++,
             'a':  a,
             'b':  b
-        })
+        };
+
+        c.push(new_connection);
+        if (visible) vc.push(new_connection);
 
         this.setState({
             connections: c,
-            atoms: atoms
-        }, () => {
-            //this.checkConsistency();
-        })
-    }
-
-    addConnectionBetweenAtoms = (a, b) => {
-        let c = this.state.connections;
-        let atoms = this.state.atoms;
-
-        c.push({
-            'id': this.totalConnections++,
-            'a':  a.id,
-            'b':  b.id
-        })
-
-        this.setState({
-            connections: c,
-            atoms: atoms
-        }, () => {
-            //this.checkConsistency();
-        })
+            visibleConnections: vc
+        });
     }
 
     closestToNumber = (n, a) => {
@@ -614,7 +615,7 @@ class App extends React.Component {
 
         let connections = this.state.connections;
 
-        let new_id = this.totalAtoms;
+        let new_id = this.totalAtoms++;
 
         let selectionIDs = this.state.selection.ids;
 
@@ -687,15 +688,12 @@ class App extends React.Component {
                 }
             }
         }
-        
-
-        this.totalAtoms++;
 
         let as = this.visibleAtoms(atoms);
 
         this.setState({
             visibleAtoms: as,
-            visibleConnections: this.visibleConnections(as),
+            visibleConnections: this.visibleConnections(as, connections),
             selection: {},
             atoms: atoms,
             connections: connections
@@ -769,9 +767,11 @@ class App extends React.Component {
         atoms.push(second);
         atoms.push(third);
 
-        this.addConnectionBetweenAtoms(first, second);
-        this.addConnectionBetweenAtoms(second, third);
-        this.addConnectionBetweenAtoms(third, first);
+        console.log("Adding connections between first,second,third");
+        
+        this.addConnectionBetweenAtoms(first.id, second.id, false);
+        this.addConnectionBetweenAtoms(second.id, third.id, false);
+        this.addConnectionBetweenAtoms(third.id, first.id, false);
         
         for (let i = 0; i < connections.length; i++) {
             let c = connections[i];
@@ -815,7 +815,7 @@ class App extends React.Component {
 
         this.setState({
             visibleAtoms: as,
-            visibleConnections: this.visibleConnections(as),
+            visibleConnections: this.visibleConnections(as, connections),
             selection: {},
             atoms: atoms,
             connections: connections
