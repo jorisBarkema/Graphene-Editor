@@ -614,7 +614,7 @@ class App extends React.Component {
 
         let connections = this.state.connections;
 
-        let new_id = this.totalAtoms;
+        let new_id = this.newAtomId();
 
         let selectionIDs = this.state.selection.ids;
 
@@ -687,9 +687,6 @@ class App extends React.Component {
                 }
             }
         }
-        
-
-        this.totalAtoms++;
 
         let as = this.visibleAtoms(atoms);
 
@@ -736,9 +733,9 @@ class App extends React.Component {
         this.removeAtomByID(atom_id);
 
         let x = old_atom.x, y = old_atom.y, z = old_atom.z;
-        let id1 = this.totalAtoms++;
-        let id2 = this.totalAtoms++;
-        let id3 = this.totalAtoms++;
+        let id1 = this.newAtomId();
+        let id2 = this.newAtomId();
+        let id3 = this.newAtomId();
 
         // TODO: deze + en - moeten ook module width/height
         let first = {
@@ -820,6 +817,16 @@ class App extends React.Component {
             atoms: atoms,
             connections: connections
         });
+    }
+
+    // Loops over all of the atoms, but since performance issues begin at the thousands of atoms,
+    // this will never be the bottleneck.
+    newAtomId = () => {
+        while (this.atomIndexByID(this.totalAtoms) !== null) {
+            this.totalAtoms++;
+        }
+
+        return this.totalAtoms;
     }
 
     connectionIndexByID = (id) => {
