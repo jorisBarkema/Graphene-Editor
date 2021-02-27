@@ -197,21 +197,34 @@ class App extends React.Component {
             }
         }
 
-        for (const [key, value] of Object.entries(counts)) {
-            if (value < 3) {
+        let atomIds = this.state.atoms.map(a => a.id);
+
+        for (const id of atomIds) {
+
+            if (!(id in counts)) {
                 warnings.push({
-                    id: key,
+                    id: id,
                     type: 'atom',
-                    text: "Too few connections"
-                })
+                    text: "No connections"
+                });
+
+                continue;
             }
 
-            if (value > 3) {
+            if (counts[id] < 3) {
                 warnings.push({
-                    id: key,
+                    id: id,
+                    type: 'atom',
+                    text: "Too few connections"
+                });
+            }
+
+            if (counts[id] > 3) {
+                warnings.push({
+                    id: id,
                     type: 'atom',
                     text: "Too many connections"
-                })
+                });
             }
         }
 
