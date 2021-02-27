@@ -15,6 +15,7 @@ class Connection extends React.Component {
 
     render = () => {
         return ([<Line
+            key = {1}
             points = {this.props.points}
             stroke = {this.state.hovered ? this.getColor() : ''}
             strokeWidth = {12 / this.props.scale}
@@ -24,6 +25,7 @@ class Connection extends React.Component {
             perfectDrawEnabled={false}
         />,
         <Line
+            key = {2}
             points = {this.props.points}
             stroke = {this.getColor()}
             strokeWidth = {(this.state.hovered ? 5 : 4) / this.props.scale}

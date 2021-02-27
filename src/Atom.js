@@ -19,6 +19,7 @@ class Atom extends React.Component {
         //console.log(15 / this.props.s)
 
         return ([<Circle
+            key = {1}
             x = {this.props.x}
             y = {this.props.y}
             radius = {15 / this.props.scale}
@@ -29,6 +30,7 @@ class Atom extends React.Component {
             perfectDrawEnabled={false}
         />,
         <Circle
+            key = {2}
             x = {this.props.x}
             y = {this.props.y}
             radius = {8 / this.props.scale}
