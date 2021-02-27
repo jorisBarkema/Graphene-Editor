@@ -537,7 +537,7 @@ class App extends React.Component {
         let b = this.state.selection.ids[1];
 
         c.push({
-            'id': this.newConnectionId(),
+            'id': this.totalConnections++,
             'a':  a,
             'b':  b
         })
@@ -555,7 +555,7 @@ class App extends React.Component {
         let atoms = this.state.atoms;
 
         c.push({
-            'id': this.newConnectionId(),
+            'id': this.totalConnections++,
             'a':  a.id,
             'b':  b.id
         })
@@ -827,14 +827,6 @@ class App extends React.Component {
         }
 
         return this.totalAtoms;
-    }
-
-    newConnectionId = () => {
-        while (this.atomIndexByID(this.totalConnections) !== null) {
-            this.totalConnections++;
-        }
-
-        return this.totalConnections;
     }
 
     connectionIndexByID = (id) => {
