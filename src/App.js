@@ -459,6 +459,8 @@ class App extends React.Component {
     addConnectionToSelection = (id) => {
         let s = this.state.selection;
 
+        console.log("Selected connection " + id);
+
         if (s.type === 'connection' && s.id === id) {
             this.setState({
                 selection: {}
@@ -530,6 +532,9 @@ class App extends React.Component {
         let c = this.state.connections
         let atoms = this.state.atoms;
 
+        console.log("Removing connection " + id);
+        console.log("Between atoms " + c[i].a + " and " + c[i].b);
+
         c.splice(i, 1);
 
         this.setState({
@@ -568,13 +573,15 @@ class App extends React.Component {
         let vc = this.state.visibleConnections;
 
         let new_connection = {
-            'id': this.totalConnections++,
+            'id': this.newConnectionId(),
             'a':  a,
             'b':  b
         };
 
         c.push(new_connection);
         if (visible) vc.push(new_connection);
+
+        this.totalConnections++
 
         this.setState({
             connections: c,
@@ -628,8 +635,6 @@ class App extends React.Component {
 
         let connections = this.state.connections;
 
-        let new_id = this.totalAtoms++;
-
         let selectionIDs = this.state.selection.ids;
 
         let guide = {
@@ -663,6 +668,7 @@ class App extends React.Component {
             atoms.splice(index, 1);
         }
 
+        let new_id = this.newAtomId();
         let new_atom = {
             'id': new_id,
             'x': x,
@@ -672,36 +678,34 @@ class App extends React.Component {
         };
 
         atoms.push(new_atom);
+        this.totalAtoms++;
 
         let madeConnectionFrom = [];
 
-        for(let t = 0; t < this.state.selection.ids.length; t++) {
-            let s = this.state.selection.ids[t];
+        for(let i = 0; i < connections.length; i++) {
+            let c = connections[i];
+            let a = c.a;
+            let b = c.b;
 
-            for(let i = connections.length - 1; i >= 0; i--) {
-                let c = connections[i];
-    
-                if (c.a === s) {
-                    if (madeConnectionFrom.includes(c.b)) {
-                        this.removeConnectionByID(c.id);
-                    } else {
-
-                        c.a = new_id;
-                        madeConnectionFrom.push(c.b);
-                    }
+            if (selectionIDs.includes(a) && !selectionIDs.includes(b)) {
+                if (madeConnectionFrom.includes(b)) {
+                    this.removeConnectionByID(c.id);
+                } else {
+                    c.a = new_id;
+                    madeConnectionFrom.push(b);
                 }
-                if (c.b === s) {
-                    if (madeConnectionFrom.includes(c.a)) {
-                        this.removeConnectionByID(c.id);
-                    } else {
+            }
 
-                        c.b = new_id;
-                        madeConnectionFrom.push(c.a);
-                    }
+            if (selectionIDs.includes(b) && !selectionIDs.includes(a)) {
+                if (madeConnectionFrom.includes(a)) {
+                    this.removeConnectionByID(c.id);
+                } else {
+                    c.b = new_id;
+                    madeConnectionFrom.push(a);
                 }
             }
         }
-
+        
         let as = this.visibleAtoms(atoms);
 
         this.setState({
@@ -747,9 +751,9 @@ class App extends React.Component {
         this.removeAtomByID(atom_id);
 
         let x = old_atom.x, y = old_atom.y, z = old_atom.z;
-        let id1 = this.totalAtoms++;
-        let id2 = this.totalAtoms++;
-        let id3 = this.totalAtoms++;
+        let id1 = this.newAtomId();
+        let id2 = this.newAtomId(id1 + 1);
+        let id3 = this.newAtomId(id2 + 1);
 
         // TODO: deze + en - moeten ook module width/height
         let first = {
@@ -779,6 +783,8 @@ class App extends React.Component {
         atoms.push(first);
         atoms.push(second);
         atoms.push(third);
+
+        this.totalAtoms += 3;
 
         console.log("Adding connections between first,second,third");
         
@@ -859,6 +865,26 @@ class App extends React.Component {
         }
 
         return null
+    }
+
+    newAtomId = (minValue = 0) => {
+        let id = Math.max(minValue, this.totalAtoms);
+
+        while (this.atomIndexByID(id) !== null) {
+            id++;
+        }
+
+        return id;
+    }
+
+    newConnectionId = () => {
+        let id = this.totalConnections;
+
+        while (this.connectionIndexByID(id) !== null) {
+            id++;
+        }
+
+        return id;
     }
 }
 
