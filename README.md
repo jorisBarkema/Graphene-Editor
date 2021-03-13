@@ -1,6 +1,6 @@
-# Graphine Editor
+# Graphene Editor
 Simple editor to visually finetune artificial graphene samples.
-
+The tool can be used on the web using https://jorisbarkema.github.io/Graphene-Editor/
 ## Data format
 The data is expected to follow the following format:
 ```
