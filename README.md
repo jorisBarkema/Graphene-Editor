@@ -1,6 +1,11 @@
 # Graphene Editor
 Simple editor to visually finetune artificial graphene samples.
-The tool can be used on the web using https://jorisbarkema.github.io/Graphene-Editor/
+
+The tool can be used on the web using https://jorisbarkema.github.io/Graphene-Editor/.
+If you use this tool for your research, we would appreciate citing the appropriate paper:
+
+"Efficient structural relaxation of polycrystalline graphene models", Federico D’Ambrosio, Joris Barkema and Gerard T. Barkema, to be published (2021)
+
 ## Data format
 The data is expected to follow the following format:
 ```
